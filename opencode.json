@@ -1,0 +1,19 @@
+{
+  "tui": {
+    "scroll_acceleration": {
+      "enabled": true
+    }
+  },
+  "model": "anthropic/claude-opus-4-5",
+  "autoupdate": true,
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "doom_loop": "ask",
+    "external_directory": "ask"
+  },
+  "$schema": "https://opencode.ai/config.json"
+}
