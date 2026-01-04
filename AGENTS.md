@@ -1,1 +1,3 @@
-OpenCode does not render markdown tables properly, so do not use them. Instead use ordered lists with sub-bullets.
+## Agent Conversation
+
+Do not use tables in messages to the user
