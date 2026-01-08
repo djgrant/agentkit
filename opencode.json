@@ -14,7 +14,7 @@
     "skill": "allow",
     "webfetch": "allow",
     "doom_loop": "ask",
-    "external_directory": "ask"
+    "external_directory": "allow"
   },
   "$schema": "https://opencode.ai/config.json"
 }
