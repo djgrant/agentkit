@@ -4,7 +4,7 @@
       "enabled": true
     }
   },
-  "model": "anthropic/claude-opus-4-5",
+  "model": "opencode/kimi-k2.5-free",
   "autoupdate": true,
   "permission": {
     "edit": "allow",
@@ -16,5 +16,29 @@
     "doom_loop": "ask",
     "external_directory": "allow"
   },
+  "mcp": {
+    "tanstack": {
+      "type": "local",
+      "command": ["npx", "@tanstack/cli", "mcp"]
+    },
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "{env:CONTEXT7_API_KEY}"
+      ]
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "environment": {
+        "GITHUB_TOKEN": "{env:GITHUB_TOKEN}"
+      }
+    }
+  },
+  "plugin": ["opencode-gemini-auth@latest"],
   "$schema": "https://opencode.ai/config.json"
 }
