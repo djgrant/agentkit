@@ -4,7 +4,7 @@
       "enabled": true
     }
   },
-  "model": "opencode/kimi-k2.5-free",
+  "model": "{env:OPENCODE_BUILD_MODEL}",
   "autoupdate": true,
   "permission": {
     "edit": "allow",
@@ -14,7 +14,35 @@
     "skill": "allow",
     "webfetch": "allow",
     "doom_loop": "ask",
-    "external_directory": "allow"
+    "external_directory": "ask"
+  },
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "{env:OPENCODE_BUILD_MODEL}"
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "{env:OPENCODE_PLAN_MODEL}"
+    },
+    "distill": {
+      "model": "{env:OPENCODE_PLAN_MODEL}"
+    },
+    "orchestrate": {
+      "model": "{env:OPENCODE_PLAN_MODEL}"
+    },
+    "architect": {
+      "model": "{env:OPENCODE_PLAN_MODEL}"
+    },
+    "critique": {
+      "model": "{env:OPENCODE_PLAN_MODEL}"
+    },
+    "diverge": {
+      "model": "{env:OPENCODE_CREATIVE_MODEL}"
+    },
+    "ux": {
+      "model": "{env:OPENCODE_CREATIVE_MODEL}"
+    }
   },
   "mcp": {
     "tanstack": {
