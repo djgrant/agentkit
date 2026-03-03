@@ -1,9 +1,4 @@
 {
-  "tui": {
-    "scroll_acceleration": {
-      "enabled": true
-    }
-  },
   "model": "{env:OPENCODE_BUILD_MODEL}",
   "autoupdate": true,
   "permission": {
