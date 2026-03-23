@@ -13,10 +13,10 @@ All skills directories contained:
 
 ## Symlink Targets
 
-- ~/.codex/skills
-- ~/.claude/skills
-- ~/.kiro/skills
-- ~/.gemini/skills
+~/.codex/skills
+~/.claude/skills
+~/.kiro/skills
+~/.agents/skills/
 
 ## Requirements
 
