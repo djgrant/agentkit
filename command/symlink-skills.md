@@ -2,7 +2,11 @@
 description: Create symlinks of skills for all harnesses
 ---
 
-You are to symlink all opencode skills to other harnesses' skill locations. 
+Create/update symlinks for all OpenCode skills into other harnesses' skill locations.
+
+This command runs the symlink operation as a tool call.
+
+!`python3 scripts/symlink_skills.py`
 
 ## Source Skills
 
