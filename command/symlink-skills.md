@@ -14,8 +14,9 @@ All skills directories contained:
 ## Symlink Targets
 
 - ~/.codex/skills
-- ~/.claude/skills/
+- ~/.claude/skills
 - ~/.kiro/skills
+- ~/.gemini/skills
 
 ## Requirements
 
