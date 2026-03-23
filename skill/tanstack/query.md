@@ -8,8 +8,8 @@ Centralize keys in cache files with increasing specificity:
 // items.cache.ts
 export const itemsKeys = {
   all: ['items'] as const,
-  list: (filters?: Filters) => [...itemsKeys.all, 'list', filters] as const,
-  detail: (id: string) => [...itemsKeys.all, id] as const,
+  list: (filters?: Filters) => ['items', 'list', filters] as const,
+  detail: (id: string) => ['items', id] as const,
 };
 
 // Parameterized keys for polymorphic data

@@ -1,6 +1,5 @@
 ---
 description: Create a git commit with AI-generated message
-model: opencode/glm-4.7-free
 ---
 
 Create a git commit (or multiple commits) for the working tree.
