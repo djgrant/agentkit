@@ -1,6 +1,11 @@
+---
+name: reviewables
+description: How to write a reviewable post that destills sets of code (e.g. changesets) for easy consumption by the user.
+---
+
 # How to Write a Reviewable
 
-A reviewable is a post that documents a decision, not an implementation. The reader should finish understanding why a change was made — not just what changed.
+A reviewable is a post that destills sets of code (e.g. changesets) for easy consumption by the user. The reader should finish understanding why the code exists — not just what changed.
 
 ---
 
