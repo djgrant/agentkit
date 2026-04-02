@@ -40,10 +40,6 @@
     }
   },
   "mcp": {
-    "tanstack": {
-      "type": "local",
-      "command": ["npx", "@tanstack/cli", "mcp"]
-    },
     "context7": {
       "type": "local",
       "command": [
