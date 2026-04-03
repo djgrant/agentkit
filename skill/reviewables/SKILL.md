@@ -167,4 +167,4 @@ Instead, ground every clause in something the reader can picture:
 - **Grounding:** Are claims and proposals traced to a code change or a measured outcome? 
 - **Examples:** Have your provided examples that ground the change or proposal in a real world context?
 - **Code:** Are diffs curated? Are prose sentences linked to the relevant code lines?
-- **Length:** Is the opening under 280 characters? Are paragraphs under 4 sentences?
+- **Length:** Are paragraphs under 4 sentences?
