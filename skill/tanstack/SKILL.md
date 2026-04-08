@@ -20,6 +20,7 @@ The package provides:
 
 ## Guides
 
+- [Basics](./basics.md) - Overview of router, server functions, API routes, data loading
 - [Project Setup](./setup.md) - Vite config, SSR, Cloudflare Workers
 - [Router](./router.md) - File-based routing, auth guards, data loading
 - [Query](./query.md) - Query keys, definitions, suspense patterns
