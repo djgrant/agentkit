@@ -115,7 +115,6 @@ export const Route = createFileRoute('/_protected/items/$type/$id')({
       type: typeSchema.parse(params.type),
       id: params.id,
     }),
-    stringify: ({ type, id }) => ({ type, id }),
   },
 });
 ```
