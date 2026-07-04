@@ -30,7 +30,7 @@ REPO = Path(__file__).resolve().parents[2]
 # name -> (base dir, {repo fmt: native subdir}, [config files symlinked into base])
 # `agents` (amp et al.) and `gemini` (antigravity) are shared skill locations.
 TARGETS = {
-    "claude": (Path("~/.claude").expanduser(), {"skill": "skills", "command": "commands"}, []),
+    "claude": (Path("~/.claude").expanduser(), {"skill": "skills", "command": "commands"}, ["settings.json"]),
     "codex": (Path("~/.codex").expanduser(), {"skill": "skills"}, []),
     "kiro": (Path("~/.kiro").expanduser(), {"skill": "skills"}, []),
     "agents": (Path("~/.agents").expanduser(), {"skill": "skills"}, []),

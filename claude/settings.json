@@ -1,0 +1,26 @@
+{
+  "model": "opus[1m]",
+  "statusLine": {
+    "type": "command",
+    "command": "bun $HOME/.claude/scripts/statusline/src/index.ts",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "plannotator@plannotator": true
+  },
+  "extraKnownMarketplaces": {
+    "plannotator": {
+      "source": {
+        "source": "github",
+        "repo": "backnotprop/plannotator"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "low",
+  "skipDangerousModePermissionPrompt": true,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
