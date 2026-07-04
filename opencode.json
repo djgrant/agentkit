@@ -40,6 +40,10 @@
     }
   },
   "mcp": {
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest", "--autoConnect"]
+    },
     "context7": {
       "type": "local",
       "command": [
@@ -58,6 +62,5 @@
       }
     }
   },
-  "plugin": ["opencode-gemini-auth@latest"],
   "$schema": "https://opencode.ai/config.json"
 }

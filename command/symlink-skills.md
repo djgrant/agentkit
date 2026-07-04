@@ -2,7 +2,7 @@
 description: Create symlinks of skills for all harnesses
 ---
 
-Create/update symlinks for all OpenCode skills into other harnesses' skill locations.
+Create/update symlinks for all agentkit skills into other harnesses' skill locations.
 
 This command runs the symlink operation as a tool call.
 
