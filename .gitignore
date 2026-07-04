@@ -14,6 +14,10 @@ yarn.lock
 # OS files
 .DS_Store
 
+# Tooling caches
+.ruff_cache/
+__pycache__/
+
 # Project-specific directories (should live in project's .opencode/)
 work/
 learnings/
