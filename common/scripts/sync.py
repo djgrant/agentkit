@@ -22,41 +22,64 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
-# name -> (base dir, {repo fmt: native subdir}, [config files symlinked into base])
+
+@dataclass
+class Target:
+    """A harness whose live config we populate with symlinks."""
+    base: Path                        # harness config root, e.g. ~/.claude
+    formats: dict[str, str]           # repo format dir -> native subdir, e.g. skill -> skills
+    files: list[str] = field(default_factory=list)  # config files symlinked directly into base
+
+    def __post_init__(self) -> None:
+        self.base = Path(self.base).expanduser()
+
+
 # `agents` (amp et al.) and `gemini` (antigravity) are shared skill locations.
 TARGETS = {
-    "claude": (Path("~/.claude").expanduser(), {"skill": "skills", "command": "commands"}, ["settings.json"]),
-    "codex": (Path("~/.codex").expanduser(), {"skill": "skills"}, []),
-    "kiro": (Path("~/.kiro").expanduser(), {"skill": "skills"}, []),
-    "agents": (Path("~/.agents").expanduser(), {"skill": "skills"}, []),
-    "gemini": (Path("~/.gemini").expanduser(), {"skill": "skills"}, []),
-    "opencode": (
-        Path("~/.config/opencode").expanduser(),
-        {"skill": "skill", "command": "command"},
-        ["opencode.json", "tui.json"],
+    "claude": Target(
+        base="~/.claude",
+        formats={"skill": "skills", "command": "commands"},
+        files=["settings.json"],
+    ),
+    "codex": Target(
+        base="~/.codex",
+        formats={"skill": "skills"},
+    ),
+    "kiro": Target(
+        base="~/.kiro",
+        formats={"skill": "skills"},
+    ),
+    "agents": Target(
+        base="~/.agents",
+        formats={"skill": "skills"},
+    ),
+    "gemini": Target(
+        base="~/.gemini",
+        formats={"skill": "skills"},
+    ),
+    "opencode": Target(
+        base="~/.config/opencode",
+        formats={"skill": "skill", "command": "command"},
+        files=["opencode.json", "tui.json"],
     ),
 }
 
 
 def managed_dirs() -> list[Path]:
-    return [base / native for base, fmt_map, _ in TARGETS.values() for native in fmt_map.values()]
+    return [t.base / native for t in TARGETS.values() for native in t.formats.values()]
 
 
-def sources_for(harness: str, fmt: str, dest_dir: Path) -> list[Path]:
-    """Source dirs contributing <fmt> to <harness>, lowest precedence first."""
-    dirs = [REPO / "common" / fmt, REPO / harness / fmt]
-    return [d for d in dirs if d.resolve() != dest_dir.resolve()]
-
-
-def collect(dirs: list[Path]) -> dict[str, Path]:
-    """name -> source path; later dirs win on collision."""
+def collect(harness: str, fmt: str) -> dict[str, Path]:
+    """name -> source path for <fmt> in <harness>; harness wins over common."""
     out: dict[str, Path] = {}
-    for d in dirs:
+    for d in [REPO / "common" / fmt, REPO / harness / fmt]:
         if not d.is_dir():
             continue
         for p in sorted(d.iterdir()):
@@ -67,14 +90,14 @@ def collect(dirs: list[Path]) -> dict[str, Path]:
     return out
 
 
-def link(src: Path, dest: Path) -> str:
-    """Create dest -> src. Returns 'linked' | 'skipped' (real path present)."""
+def link(src: Path, dest: Path) -> bool:
+    """Create dest -> src. Returns False (and skips) if a real path is in the way."""
     if dest.exists() and not dest.is_symlink():
-        return "skipped"  # never clobber a real dir/file
+        return False  # never clobber a real dir/file
     if dest.is_symlink() or dest.exists():
         dest.unlink()
     dest.symlink_to(src)
-    return "linked"
+    return True
 
 
 def prune_dead(dest_dir: Path) -> int:
@@ -101,19 +124,19 @@ def is_ours(p: Path) -> bool:
 
 def sync() -> tuple[int, int, int]:
     linked = skipped = dead = 0
-    for harness, (base, fmt_map, files) in TARGETS.items():
-        base.mkdir(parents=True, exist_ok=True)
-        for fname in files:
+    for harness, target in TARGETS.items():
+        target.base.mkdir(parents=True, exist_ok=True)
+        for fname in target.files:
             src = REPO / harness / fname
-            if src.exists() and link(src, base / fname) == "linked":
+            if src.exists() and link(src, target.base / fname):
                 linked += 1
-        for fmt, native in fmt_map.items():
-            dest_dir = base / native
+        for fmt, native in target.formats.items():
+            dest_dir = target.base / native
             dest_dir.mkdir(parents=True, exist_ok=True)
             dead += prune_dead(dest_dir)
-            items = collect(sources_for(harness, fmt, dest_dir))
+            items = collect(harness, fmt)
             for name, src in items.items():
-                if link(src, dest_dir / name) == "linked":
+                if link(src, dest_dir / name):
                     linked += 1
                 else:
                     skipped += 1
@@ -153,7 +176,6 @@ def prune_undeclared() -> None:
         ans = input(f"Remove {p.name} ({p.parent})? [y/N] ").strip().lower()
         if ans == "y":
             if p.is_dir() and not p.is_symlink():
-                import shutil
                 shutil.rmtree(p)
             else:
                 p.unlink()
