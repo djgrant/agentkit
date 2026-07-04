@@ -1,4 +1,4 @@
- ---
+---
 name: setup-vendored-subtree
 description: Sets up a vendored external repository as a git subtree to act as read-only reference material for agents
 ---
