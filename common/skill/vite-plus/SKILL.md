@@ -1,5 +1,5 @@
 ---
-name: vite+
+name: vite-plus
 description: When using vite+ (vite plus, vp), use this skill to understand the recommend best practices.
 ---
 
