@@ -37,6 +37,17 @@ To gather a panel's reactions to a proposal:
    `name → SESSION id` map so you can follow up with each individually.
 3. Synthesise the responses, attributing each point to its stakeholder.
 
+## Learnings flow back automatically
+
+A fork is throwaway, but its *learnings* aren't lost. If a consultation produces knowledge
+that belongs in the plan, the stakeholder ends its answer with a `LEARNINGS:` block.
+`ask_stakeholder.py` detects that block and, in the background, appends it to the canonical
+session (`claude --resume <parent> -p ...`) so every future fork inherits it.
+
+You don't have to do anything — it's automatic and non-blocking. Because each update is an
+appended turn (not a pointer swap), learnings from multiple forks accumulate rather than
+overwrite. The canonical session id is unchanged, so the registry stays as-is.
+
 ## Notes
 
 - Bare names default to the `cc` harness; pass `name:kind` to target another (only

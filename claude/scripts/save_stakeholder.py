@@ -4,6 +4,10 @@
 Called by the /create-stakeholder command's !-block as:
     save_stakeholder.py "<session_id>" "<project_dir>" "<name> [description]"
 
+If a stakeholder with the same name already exists for the project, the save is
+refused (exit code 2) and the existing entry is reported, unless --force is
+passed. The command's agent turns that into a rename-or-replace prompt.
+
 The registry is partitioned by project directory:
     { "<project_dir>": { "<name>:cc": { kind, description, created, session_id } } }
 
@@ -25,6 +29,9 @@ from _registry import registry_path
 def main(argv: list[str]) -> int:
     reg_path = registry_path()
 
+    force = "--force" in argv
+    argv = [a for a in argv if a != "--force"]
+
     sid = (argv[0] if len(argv) > 0 else "") or os.environ.get("CLAUDE_CODE_SESSION_ID", "")
     proj = (argv[1] if len(argv) > 1 else "") or os.getcwd()
     raw = argv[2] if len(argv) > 2 else ""
@@ -41,7 +48,21 @@ def main(argv: list[str]) -> int:
         return 1
 
     reg = json.loads(reg_path.read_text()) if reg_path.exists() else {}
-    reg.setdefault(proj, {})[f"{name}:cc"] = {
+
+    key = f"{name}:cc"
+    existing = reg.get(proj, {}).get(key)
+    if existing and not force:
+        print(
+            f"create-stakeholder: a stakeholder named '{name}' already exists in {proj}\n"
+            f"  description: {existing.get('description', '')}\n"
+            f"  created:     {existing.get('created', '')}\n"
+            f"  session_id:  {existing.get('session_id', '')[:8]}…\n"
+            "Rerun with --force to replace it, or choose a different name.",
+            file=sys.stderr,
+        )
+        return 2
+
+    reg.setdefault(proj, {})[key] = {
         "kind": "cc",
         "description": desc,
         "created": _dt.date.today().isoformat(),

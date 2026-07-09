@@ -12,6 +12,10 @@ set STAKEHOLDER_PROJECT to disambiguate.
 
 Prints the answer, then a final line `SESSION: <id>`. Pass that id back as the third
 argument to continue the same conversation.
+
+If the fork's answer contains a `LEARNINGS:` block (everything from that marker to the
+end of the message), those learnings are forwarded to the canonical session in the
+background so future forks inherit them. This is automatic and non-blocking.
 """
 
 from __future__ import annotations
@@ -20,8 +24,29 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 from _registry import registry_path
+
+LEARNINGS_MARKER = "LEARNINGS:"
+
+
+def forward_learnings_bg(name: str, result: str, proj: str) -> None:
+    """If the answer carries a LEARNINGS: block, spawn a detached forwarder."""
+    idx = result.find(LEARNINGS_MARKER)
+    if idx == -1:
+        return
+    learnings = result[idx + len(LEARNINGS_MARKER):].strip()
+    if not learnings:
+        return
+    script = str(Path(__file__).with_name("forward_learnings.py"))
+    subprocess.Popen(
+        [script, name, learnings],
+        cwd=proj,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
 
 
 def die(msg: str) -> int:
@@ -62,6 +87,7 @@ def main(argv: list[str]) -> int:
         return die(proc.stderr.strip() or f"claude exited {proc.returncode}")
 
     out = json.loads(proc.stdout)
+    forward_learnings_bg(name, out["result"], proj)
     print(out["result"])
     print(f"SESSION: {out['session_id']}")
     return 0
