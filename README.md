@@ -43,7 +43,7 @@ wins on name collision). Links are individual; dead links are pruned; real
 
 | harness  | live location       | gets                        |
 | -------- | ------------------- | --------------------------- |
-| claude   | `~/.claude`         | skills, commands            |
+| claude   | `~/.claude`         | skills, commands, `settings.json`, `CLAUDE.md` |
 | codex    | `~/.codex`          | skills                      |
 | kiro     | `~/.kiro`           | skills                      |
 | agents   | `~/.agents`         | skills (shared, e.g. amp)   |

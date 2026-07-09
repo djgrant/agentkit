@@ -46,7 +46,7 @@ TARGETS = {
     "claude": Target(
         base="~/.claude",
         formats={"skill": "skills", "command": "commands"},
-        files=["settings.json"],
+        files=["settings.json", "CLAUDE.md"],
     ),
     "codex": Target(
         base="~/.codex",
