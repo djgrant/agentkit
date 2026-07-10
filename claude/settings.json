@@ -4,9 +4,29 @@
     "pr": ""
   },
   "permissions": {
+    "deny": [
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "DesignSync",
+      "NotebookEdit",
+      "SendMessage",
+      "PushNotification",
+      "RemoteTrigger",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "AskUserQuestion",
+      "CronCreate",
+      "CronDelete",
+      "CronList"
+    ],
     "defaultMode": "auto"
   },
   "model": "opus[1m]",
+  "disableClaudeAiConnectors": true,
+  "disableBundledSkills": true,
+  "disableRemoteControl": true,
+  "disableWorkflows": true,
+  "disableArtifact": true,
   "statusLine": {
     "type": "command",
     "command": "bun $HOME/.claude/scripts/statusline/src/index.ts",
@@ -14,7 +34,8 @@
   },
   "enabledPlugins": {
     "plannotator@plannotator": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "humans@humans-sh": true
   },
   "extraKnownMarketplaces": {
     "plannotator": {
@@ -22,87 +43,13 @@
         "source": "github",
         "repo": "backnotprop/plannotator"
       }
+    },
+    "humans-sh": {
+      "source": {
+        "source": "directory",
+        "path": "$HOME/Repos/djgrant/humans.sh"
+      }
     }
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "mcp__humans__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bun $HOME/Repos/djgrant/humans.sh/packages/cc-plugin/src/hook.ts",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "low",
