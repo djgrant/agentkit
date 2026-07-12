@@ -5,8 +5,6 @@
   },
   "permissions": {
     "deny": [
-      "EnterPlanMode",
-      "ExitPlanMode",
       "DesignSync",
       "NotebookEdit",
       "SendMessage",
@@ -21,7 +19,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
   "disableRemoteControl": true,
@@ -51,8 +49,8 @@
       }
     }
   },
-  "autoMemoryEnabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "low",
+  "effortLevel": "medium",
+  "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true
 }
