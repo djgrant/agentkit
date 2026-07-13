@@ -40,10 +40,6 @@
     }
   },
   "mcp": {
-    "chrome-devtools": {
-      "type": "local",
-      "command": ["npx", "-y", "chrome-devtools-mcp@latest", "--autoConnect"]
-    },
     "context7": {
       "type": "local",
       "command": [
@@ -52,14 +48,30 @@
         "@upstash/context7-mcp",
         "--api-key",
         "{env:CONTEXT7_API_KEY}"
-      ]
+      ],
+      "enabled": true
     },
     "github": {
       "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "enabled": true,
       "environment": {
         "GITHUB_TOKEN": "{env:GITHUB_TOKEN}"
       }
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--autoConnect"
+      ],
+      "enabled": true
     }
   },
   "$schema": "https://opencode.ai/config.json"

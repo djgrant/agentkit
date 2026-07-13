@@ -3,8 +3,11 @@ node_modules/
 
 # Package manager files (auto-generated)
 package.json
+# except the root pok CLI manifest
+!/package.json
 bun.lock
 pnpm-lock.yaml
+pnpm-workspace.yaml
 package-lock.json
 yarn.lock
 
@@ -13,6 +16,11 @@ yarn.lock
 
 # OS files
 .DS_Store
+
+# MCP secrets + per-target manifests (generated)
+common/mcp/secrets.env
+**/.agentkit-mcp.json
+**/*.agentkit.bak
 
 # Tooling caches
 .ruff_cache/

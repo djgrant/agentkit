@@ -1,0 +1,27 @@
+{
+  "$comment": "Canonical MCP server topology, projected into every harness by sync/mcp.py. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all).",
+  "servers": {
+    "context7": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp", "--api-key", "${CONTEXT7_API_KEY}"]
+    },
+    "github": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
+    },
+    "chrome-devtools": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"],
+      "targets": ["opencode"]
+    },
+    "humans": {
+      "transport": "http",
+      "url": "http://localhost:7373/mcp",
+      "targets": ["claude"]
+    }
+  }
+}

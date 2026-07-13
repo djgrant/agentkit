@@ -1,53 +1,44 @@
 # agentkit
 
-Personal, cross-harness agent configuration — skills, commands, and tools shared
-across [OpenCode](https://opencode.ai), Claude Code, Codex, Kiro, and other harnesses.
+Personal, cross-harness agent config — skills, commands, and MCP servers shared
+across [OpenCode](https://opencode.ai), Claude Code, Codex, Kiro, and others.
 
 ## Layout
 
 ```
-agentkit/
-├── common/            # shared across all harnesses
-│   ├── skill/
-│   ├── command/
-│   └── scripts/
-│       └── sync.py    # symlinks config into every harness's native location
-├── opencode/          # OpenCode-specific config
-│   ├── opencode.json
-│   ├── tui.json
-│   └── command/
-├── claude/            # Claude Code-specific
-│   ├── command/
-│   └── scripts/
-└── codex/  kiro/      # grow as harness-specific content appears
+common/          shared across all harnesses (skill/, command/, mcp/)
+  mcp/servers.json   canonical MCP topology — the one file you edit
+cli/             the CLI (Bun/TS)
+  commands/          sync | view | drift  (business logic)
+  core.ts            harness registry + MCP render (shared)
+pok.config.ts    pok entrypoint
+<harness>/       harness-specific config (claude/, opencode/, codex/, kiro/)
 ```
 
-**Rule of thumb:** harness-specific config lives under its harness dir; anything
-portable lives in `common/`. Within each dir, subdirs use the native format names
-(`skill/`, `command/`, `scripts/`, …) that harnesses already understand.
-
-## Setup
-
-The repo is pure source. `sync.py` symlinks each item into every harness's live
-config location — including OpenCode's `~/.config/opencode`, which is treated as an
-ordinary target (a real dir populated with symlinks), so nothing points back into the
-repo at itself:
+## Commands
 
 ```bash
-python3 common/scripts/sync.py      # or: /sync from within any harness
+bun install                 # once
+
+pok sync                    # link skills/commands/config + render MCP per harness
+pok view                    # canonical MCP source + secret status
+pok drift                   # where live harness config diverges from source
 ```
 
-Each target gets `common/<fmt>/*` plus its own `<harness>/<fmt>/*` (harness-specific
-wins on name collision). Links are individual; dead links are pruned; real
-(non-symlink) paths are never clobbered.
+## Contract
 
-| harness  | live location       | gets                        |
-| -------- | ------------------- | --------------------------- |
-| claude   | `~/.claude`         | skills, commands, `settings.json`, `CLAUDE.md` |
-| codex    | `~/.codex`          | skills                      |
-| kiro     | `~/.kiro`           | skills                      |
-| agents   | `~/.agents`         | skills (shared, e.g. amp)   |
-| opencode | `~/.config/opencode`| skills, commands, `*.json`  |
+- **Source of truth is the repo.** Config is projected into each harness's live
+  location; never edit the generated targets by hand.
+- **Skills/commands/config** are symlinked. `common/<fmt>/*` plus each
+  `<harness>/<fmt>/*` (harness wins on collision). Dead links pruned; real paths
+  never clobbered.
+- **MCP** is rendered (can't symlink — each harness has its own schema): edit
+  `common/mcp/servers.json`, run `pok sync`. Per-server `"targets": [...]` scopes
+  which harnesses receive it. agentkit owns each harness's MCP block outright, so
+  the source is authoritative — servers added by hand elsewhere are overwritten.
+- **Secrets** never enter `servers.json` — use `${VAR}` placeholders. Real values
+  live in `common/mcp/secrets.env` (gitignored; copy `.example`), also meant to be
+  `source`d in your shell so `{env:VAR}` harnesses read the same store.
 
 ## License
 
