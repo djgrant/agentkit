@@ -18,7 +18,7 @@
       "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"],
       "targets": ["opencode"]
     },
-    "humans": {
+    "hmux-signals": {
       "transport": "http",
       "url": "http://localhost:7373/mcp",
       "targets": ["claude"]
