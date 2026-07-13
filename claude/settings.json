@@ -33,7 +33,7 @@
   "enabledPlugins": {
     "plannotator@plannotator": true,
     "swift-lsp@claude-plugins-official": true,
-    "humans@humans-sh": true
+    "hmux@hmux": true
   },
   "extraKnownMarketplaces": {
     "plannotator": {
@@ -42,7 +42,7 @@
         "repo": "backnotprop/plannotator"
       }
     },
-    "humans-sh": {
+    "hmux": {
       "source": {
         "source": "directory",
         "path": "$HOME/Repos/djgrant/humans.sh"
@@ -50,7 +50,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
+  "effortLevel": "low",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true
 }
