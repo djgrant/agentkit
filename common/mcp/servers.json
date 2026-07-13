@@ -1,5 +1,5 @@
 {
-  "$comment": "Canonical MCP server topology, projected into every harness by sync/mcp.py. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all).",
+  "$comment": "Canonical MCP server topology, projected into every harness by `pok sync`. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all).",
   "servers": {
     "context7": {
       "transport": "stdio",
@@ -16,7 +16,7 @@
       "transport": "stdio",
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"],
-      "targets": ["opencode"]
+      "targets": ["opencode", "amp"]
     },
     "hmux-signals": {
       "transport": "http",

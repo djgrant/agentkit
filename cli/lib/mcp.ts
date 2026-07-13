@@ -1,5 +1,8 @@
-// The contract an MCP dialect abides by, and the engine that renders a
-// canonical server map into it. Knows nothing about specific harnesses.
+// The canonical server model, and the contract a dialect abides by: how to
+// render a server into its native shape, how its secrets leave the repo, and
+// where the result is stored. Knows nothing about specific harnesses.
+
+import type { McpStore } from "./store.ts";
 
 export interface Server {
   transport: "stdio" | "http";
@@ -11,40 +14,46 @@ export interface Server {
   targets?: string[]; // omitted = every target
 }
 
+/**
+ * How ${NAME} placeholders leave the repo: expanded to the secret value
+ * ("inline"), left as-is for the harness to interpolate ("passthrough"),
+ * or rewritten to the dialect's own template (e.g. "{env:$NAME}").
+ */
+export type SecretStyle = "inline" | "passthrough" | (string & {});
+
 export interface Dialect {
-  file: string; // live config file the block is written into
-  key: string; // top-level key in that file that the block owns
-  labels: { stdio: string; http: string }; // what the dialect calls each transport
-  command: "args" | "argv"; // {command, args} split, or one command array
-  envField: string; // field name for a server's env vars
-  enabled?: boolean; // dialect requires enabled: true on every server
-  secrets: "inline" | string; // expand ${NAME} to its value, or to this template ($NAME)
+  store: McpStore; // where the rendered servers persist
+  secrets: SecretStyle;
+  render: (server: Server) => Record<string, unknown>; // canonical -> native shape
 }
 
-function renderServer(s: Server, d: Dialect): Record<string, unknown> {
-  const server =
-    s.transport === "http"
-      ? { type: d.labels.http, url: s.url, ...(s.headers && { headers: s.headers }) }
-      : d.command === "argv"
-        ? { type: d.labels.stdio, command: [s.command, ...(s.args ?? [])], ...(s.env && { [d.envField]: s.env }) }
-        : { type: d.labels.stdio, command: s.command, args: s.args ?? [], ...(s.env && { [d.envField]: s.env }) };
-  return d.enabled ? { ...server, enabled: true } : server;
-}
+/** Drop undefined fields so dialect renders stay terse. */
+export const compact = (obj: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined));
 
 /** The servers targeting `name`, rendered in the dialect with secrets resolved. */
-export function renderBlock(
+export function renderServers(
   servers: Record<string, Server>,
   name: string,
   dialect: Dialect,
   env: Record<string, string>,
 ): Record<string, unknown> {
-  const block = Object.fromEntries(
+  const rendered = Object.fromEntries(
     Object.entries(servers)
-      .filter(([, s]) => !s.targets || s.targets.includes(name))
-      .map(([id, s]) => [id, renderServer(s, dialect)]),
+      .filter(([, server]) => !server.targets || server.targets.includes(name))
+      .map(([id, server]) => [id, dialect.render(server)]),
   );
-  const json = JSON.stringify(block).replace(/\$\{(\w+)\}/g, (whole, v) =>
-    dialect.secrets === "inline" ? (env[v] ?? whole) : dialect.secrets.replaceAll("$NAME", v),
+  return resolveSecrets(rendered, dialect.secrets, env);
+}
+
+function resolveSecrets(
+  block: Record<string, unknown>,
+  style: SecretStyle,
+  env: Record<string, string>,
+): Record<string, unknown> {
+  if (style === "passthrough") return block;
+  const json = JSON.stringify(block).replace(/\$\{(\w+)\}/g, (placeholder, name) =>
+    style === "inline" ? (env[name] ?? placeholder) : style.replaceAll("$NAME", name),
   );
   return JSON.parse(json);
 }
