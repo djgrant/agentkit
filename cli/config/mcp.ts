@@ -30,7 +30,7 @@ export const servers = (): Record<string, Server> => readJson(SERVERS_FILE).serv
 export const DIALECTS: Record<string, Dialect> = {
   claude: {
     store: jsonFileStore("~/.claude.json", "mcpServers"),
-    secrets: "inline", // Claude doesn't interpolate env itself
+    secrets: "passthrough", // Claude expands ${NAME} from the launching shell env
     render: (s) =>
       s.transport === "http"
         ? compact({ type: "http", url: s.url, headers: s.headers })

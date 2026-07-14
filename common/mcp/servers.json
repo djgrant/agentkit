@@ -7,21 +7,15 @@
       "args": ["-y", "@upstash/context7-mcp", "--api-key", "${CONTEXT7_API_KEY}"]
     },
     "github": {
-      "transport": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
+      "transport": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" }
     },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"],
       "targets": ["opencode", "amp"]
-    },
-    "hmux-signals": {
-      "transport": "http",
-      "url": "http://localhost:7373/mcp",
-      "targets": ["claude"]
     }
   }
 }
