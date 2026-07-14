@@ -19,7 +19,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "fable",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
   "disableRemoteControl": true,
