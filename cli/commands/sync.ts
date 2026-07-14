@@ -10,10 +10,13 @@ import { scanLinks, ownedEntries, type Unmanaged } from "../lib/links.ts";
 export const command = defineCommand({
   label: "Sync agentkit config into every harness",
   run: async (r) => {
-    for (const { name, dialect, desiredServers, ownedIds } of mcpTargets()) {
-      dialect.store.write(desiredServers, ownedIds);
-      r.reporter.info(`mcp     ${name.padEnd(8)} ${Object.keys(desiredServers).length} servers`);
-    }
+    await r.group("MCP", { layout: "sequence" }, async (g) => {
+      for (const { name, dialect, desiredServers, ownedIds } of mcpTargets()) {
+        await g.activity(`${name} — ${Object.keys(desiredServers).length} servers`, () => {
+          dialect.store.write(desiredServers, ownedIds);
+        });
+      }
+    });
 
     const { managed, unmanaged } = scanLinks();
     const interactive = Boolean(process.stdin.isTTY);
@@ -24,7 +27,7 @@ export const command = defineCommand({
     for (const states of groupBy(managed.filter((m) => m.status === "blocked"), (m) => m.src).values()) {
       const { entry, format, src } = states[0];
       if (!interactive) {
-        r.reporter.info(`skip    ${format}/${entry} blocked in ${states.map((s) => s.harness).join(", ")} — run \`sync\` in a terminal`);
+        r.reporter.warn(`skipped ${format}/${entry} — blocked in ${states.map((s) => s.harness).join(", ")}; run \`sync\` in a terminal to resolve`);
         continue;
       }
       const side = await r.prompter.select<"left" | "right">({
@@ -42,7 +45,7 @@ export const command = defineCommand({
     for (const group of groupByEntry(unmanaged).values()) {
       const { format, entry } = group[0];
       if (!interactive) {
-        r.reporter.info(`skip    ${format}/${entry} unmanaged in ${group.map((g) => g.harness).join(", ")} — run \`sync\` in a terminal`);
+        r.reporter.warn(`skipped ${format}/${entry} — unmanaged in ${group.map((g) => g.harness).join(", ")}; run \`sync\` in a terminal to adopt`);
         continue;
       }
       // Identical copies across harnesses => one common skill; divergent copies stay per-harness.
@@ -62,26 +65,31 @@ export const command = defineCommand({
       } else {
         for (const g of group) moveTree(g.dest, path.join(REPO, g.harness, format, entry)); // divergent: preserve each
       }
-      r.reporter.info(`adopt   ${where}${entry}`);
+      r.reporter.success(`adopted ${where}${entry}`);
     }
 
     // Link every owned entry into every harness (adopted names are now owned; owned set is recomputed).
-    for (const [name, harness] of Object.entries(HARNESSES)) {
-      const base = untilde(harness.base);
-      for (const file of harness.files ?? []) {
-        ensureSymlink(path.join(REPO, name, file), path.join(base, file));
+    await r.group("Links", { layout: "sequence" }, async (g) => {
+      for (const [name, harness] of Object.entries(HARNESSES)) {
+        await g.activity(name, () => {
+          const base = untilde(harness.base);
+          for (const file of harness.files ?? []) {
+            ensureSymlink(path.join(REPO, name, file), path.join(base, file));
+          }
+          for (const [format, native] of Object.entries(harness.formats)) {
+            const dir = path.join(base, native);
+            fs.mkdirSync(dir, { recursive: true });
+            pruneDeadLinks(dir);
+            for (const [entry, src] of ownedEntries(name, format)) {
+              const dest = path.join(dir, entry);
+              ensureSymlink(src, dest, overwrite.has(dest));
+            }
+          }
+        });
       }
-      for (const [format, native] of Object.entries(harness.formats)) {
-        const dir = path.join(base, native);
-        fs.mkdirSync(dir, { recursive: true });
-        pruneDeadLinks(dir);
-        for (const [entry, src] of ownedEntries(name, format)) {
-          const dest = path.join(dir, entry);
-          ensureSymlink(src, dest, overwrite.has(dest));
-        }
-      }
-      r.reporter.info(`links   ${name}`);
-    }
+    });
+
+    r.reporter.success("Sync complete.");
   },
 });
 

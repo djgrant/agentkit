@@ -7,30 +7,49 @@ export const command = defineCommand({
   run: async (r) => {
     let drifted = false;
 
-    r.reporter.info("mcp");
-    for (const { name, liveServers, desiredServers, ownedIds } of mcpTargets()) {
+    const mcpRows = mcpTargets().map(({ name, liveServers, desiredServers, ownedIds }) => {
       const live = pick(liveServers(), ownedIds);
       const changes = changedServers(live, desiredServers);
-      r.reporter.info(`  ${name.padEnd(8)} ${changes.length ? "✗ drifted" : "✓ in sync"}`);
-      for (const change of changes) r.reporter.info(`    ${change}`);
       drifted ||= changes.length > 0;
-    }
+      const status = changes.length ? "drifted" : "in sync";
+      return `| \`${name}\` | ${status} | ${changes.length ? changes.map((c) => `\`${c}\``).join(" ") : "—"} |`;
+    });
+
+    r.reporter.step("MCP");
+    r.reporter.markdown(
+      [`| Harness | Status | Changes |`, `| --- | --- | --- |`, ...mcpRows].join("\n"),
+    );
 
     const { managed, unmanaged } = scanLinks();
     const off = managed.filter((m) => m.status !== "ok");
-    r.reporter.info("\nlinks");
-    if (!off.length && !unmanaged.length) r.reporter.info("  ✓ in sync");
-    for (const m of off) {
-      const sign = m.status === "missing" ? "+" : "~";
-      const note = m.status === "blocked" ? "real dir blocking owned link" : m.status === "stale" ? `link -> ${m.liveTarget}` : "would link";
-      r.reporter.info(`  ${sign} ${m.harness.padEnd(8)} ${m.format.padEnd(7)} ${m.entry.padEnd(16)} ${note}`);
-    }
-    for (const u of unmanaged) {
-      r.reporter.info(`  ? ${u.harness.padEnd(8)} ${u.format.padEnd(7)} ${u.entry.padEnd(16)} unmanaged`);
-    }
     drifted ||= off.length > 0 || unmanaged.length > 0;
 
-    if (drifted) r.reporter.info("\nrun `pok sync` to reconcile");
+    r.reporter.step("Links");
+    if (!off.length && !unmanaged.length) {
+      r.reporter.success("All owned links in sync.");
+    } else {
+      const linkRows = [
+        ...off.map((m) => {
+          const sign = m.status === "missing" ? "+" : "~";
+          const note =
+            m.status === "blocked"
+              ? "real dir blocking owned link"
+              : m.status === "stale"
+                ? `link → ${m.liveTarget}`
+                : "would link";
+          return `| \`${sign}\` | \`${m.harness}\` | ${m.format} | \`${m.entry}\` | ${note} |`;
+        }),
+        ...unmanaged.map(
+          (u) => `| \`?\` | \`${u.harness}\` | ${u.format} | \`${u.entry}\` | unmanaged |`,
+        ),
+      ];
+      r.reporter.markdown(
+        [`|  | Harness | Format | Entry | Note |`, `| --- | --- | --- | --- | --- |`, ...linkRows].join("\n"),
+      );
+    }
+
+    if (drifted) r.reporter.warn("Drift detected — run `pok sync` to reconcile.");
+    else r.reporter.success("Everything is in sync.");
   },
 });
 
