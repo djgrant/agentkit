@@ -6,11 +6,6 @@
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp", "--api-key", "${CONTEXT7_API_KEY}"]
     },
-    "github": {
-      "transport": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" }
-    },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "npx",
