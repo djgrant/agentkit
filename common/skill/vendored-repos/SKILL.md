@@ -1,27 +1,25 @@
 ---
 name: vendored-repos
-description: Read-only store of vendored external library source at ~/Repos/vendors (effect, opencode, opentui, alchemy, sst, notation, …). Consult it for idiomatic examples, real API usage, and internals before falling back to web search or guessing. Shared across all projects.
+description: Read-only store of vendored external library source at ~/Repos/vendors — consult it for idiomatic examples, real API usage, and internals before falling back to web search or guessing. Also covers adding a repo to the store.
 ---
 
 # Vendored Repositories
 
-Full source of external libraries is vendored locally in one shared,
-machine-local store: `~/Repos/vendors/`. It is read-only reference material —
-idiomatic examples and internals — shared across every project.
+External library source is vendored locally in a shared, read-only store:
+`~/Repos/vendors/<name>`. Grep and read it for idiomatic examples, real API
+usage, and internals — prefer it over web search or guessing.
 
-## Use it
+Never import from it (application code uses the normal package dependencies) and
+never edit it. See `~/Repos/vendors/README.md` for the current inventory.
 
-- Prefer examples from vendored source over web search or guessing.
-- Grep and read under `~/Repos/vendors/<lib>` for real usage, types, and internals.
-- Effect examples live under `~/Repos/vendors/effect/packages/**/examples`.
-- See `~/Repos/vendors/README.md` for the current inventory and upstreams.
+## Add a repo
 
-## Don't
+`~/Repos/vendors` is a plain directory. Shallow-clone the upstream, then drop its
+git history so it stays plain read-only files:
 
-- Do not import from `~/Repos/vendors`. Application code imports from the normal
-  package dependencies; this is reference material only.
-- Do not edit vendored files — treat them as read-only.
+```bash
+git clone --depth 1 --branch <branch> <repo-url> ~/Repos/vendors/<name>
+rm -rf ~/Repos/vendors/<name>/.git
+```
 
-## Adding a repo
-
-To vendor a new upstream into the store, use the `vendor-subtree` skill.
+Then add a row to `~/Repos/vendors/README.md` (directory, upstream URL, branch).
