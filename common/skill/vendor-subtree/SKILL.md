@@ -1,66 +1,32 @@
 ---
 name: setup-vendored-subtree
-description: Sets up a vendored external repository as a git subtree to act as read-only reference material for agents
+description: Vendor an external repository into the shared ~/Repos/vendors reference store so coding agents get read-only access to its source and idiomatic examples
 ---
 
-# Setup Vendored Git Subtree
+# Vendor an External Repository
 
-This skill helps you vendor an external repository into the current project using a git subtree. This is useful for giving coding agents access to idiomatic examples and source code of libraries you are using, without cluttering the human developer's editor.
+Vendored repos live in one shared, machine-local store: `~/Repos/vendors/<name>`.
+They are read-only reference material for agents — idiomatic examples and
+internals — not build dependencies. For usage, see the `vendored-repos` skill.
 
-## Instructions
+`~/Repos/vendors` is a plain directory (not a git repo), shared across all
+projects — so there is nothing to configure per project.
 
-### 1. Add the Git Subtree
+## 1. Clone it in
 
-Always use the `--squash` flag to prevent importing the external repository's entire commit history.
+Shallow-clone the upstream to keep the store lean, then drop its git history so
+it stays plain read-only files:
 
 ```bash
-git subtree add --prefix=repos/<repo-name> <repo-url> main --squash
+git clone --depth 1 --branch <branch> <repo-url> ~/Repos/vendors/<name>
+rm -rf ~/Repos/vendors/<name>/.git
 ```
 
-### 2. Configure Editors
+## 2. Record it
 
-Ensure the vendored repository does not interfere with the human developer's workflow (e.g., polluting search results or auto-imports).
+Add a row to `~/Repos/vendors/README.md`: directory, upstream URL, branch.
 
+## 3. Done
 
-```jsonc
-// .vscode/settings.json
-{
-  "typescript.preferences.autoImportFileExcludePatterns": [
-    "repos/**"
-  ],
-  "javascript.preferences.autoImportFileExcludePatterns": [
-    "repos/**"
-  ],
-  "files.exclude": {
-    "repos/**": true
-  },
-  "files.watcherExclude": {
-    "repos/**": true
-  },
-  "search.exclude": {
-    "repos/**": true
-  }
-}
-```
-
-```jsonc
-{
-  "file_scan_exclusions": [
-    "repos/**"
-  ]
-}
-```
-
-### 3. Update Agent Instructions
-
-Make sure coding agents know how to interact with the vendored directory. If it doesn't already exist, add this snippet to AGENTS.md.
-
-```md
-## Vendored Repositories
-
-This project vendors external repositories under ./@repos as read-only reference material.
-
-Prefer examples from vendored source code over search results.
-
-Do not import from ./@repos; application code should continue importing from normal package dependencies.
-```
+No per-project setup: no subtree, no AGENTS.md snippet, no `.vscode` excludes.
+Agents discover the store through the `vendored-repos` skill.
