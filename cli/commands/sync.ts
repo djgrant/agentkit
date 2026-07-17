@@ -3,23 +3,56 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { REPO } from "../config/paths.ts";
 import { HARNESSES } from "../config/harnesses.ts";
-import { mcpTargets } from "../config/mcp.ts";
+import { mcpTargets, foreignIds, markUnmanaged } from "../config/mcp.ts";
 import { ensureSymlink, pruneDeadLinks, untilde, moveTree, treeEqual } from "../lib/fs.ts";
 import { scanLinks, ownedEntries, type Unmanaged } from "../lib/links.ts";
 
 export const command = defineCommand({
   label: "Sync agentkit config into every harness",
   run: async (r) => {
+    const interactive = Boolean(process.stdin.isTTY);
+    const targets = mcpTargets();
+
+    // Live servers on ids the manifest neither owns nor lists as unmanaged:
+    // delete them, or record them in the manifest's `unmanaged` map. One prompt
+    // per id, even when the same server is live in several harnesses.
+    const deletions = new Map<string, Set<string>>(); // harness -> ids to drop on write
+    const foreign = targets.flatMap((t) => foreignIds(t).map((id) => ({ harness: t.name, id })));
+    for (const group of groupBy(foreign, (f) => f.id).values()) {
+      const { id } = group[0];
+      const where = group.map((g) => g.harness).join(", ");
+      if (!interactive) {
+        r.reporter.warn(`skipped ${id} (mcp) — live in ${where} but not in the manifest; run \`sync\` in a terminal to resolve`);
+        continue;
+      }
+      const action = await r.prompter.select<"delete" | "unmanaged">({
+        message: `${id} (mcp) live in ${where} but not in the manifest`,
+        options: [
+          { label: "delete from the live config(s)", value: "delete" },
+          { label: "mark unmanaged (leave it, stop asking)", value: "unmanaged" },
+        ],
+      });
+      if (action === "delete") {
+        for (const g of group) {
+          const ids = deletions.get(g.harness) ?? new Set<string>();
+          ids.add(id);
+          deletions.set(g.harness, ids);
+        }
+      } else {
+        markUnmanaged(group.map((g) => ({ harness: g.harness, id })));
+      }
+    }
+
     await r.group("MCP", { layout: "sequence" }, async (g) => {
-      for (const { name, dialect, desiredServers, ownedIds } of mcpTargets()) {
+      for (const { name, dialect, desiredServers, ownedIds } of targets) {
+        const drop = deletions.get(name);
         await g.activity(`${name} — ${Object.keys(desiredServers).length} servers`, () => {
-          dialect.store.write(desiredServers, ownedIds);
+          dialect.store.write(desiredServers, drop ? [...ownedIds, ...drop] : ownedIds);
         });
       }
     });
 
     const { managed, unmanaged } = scanLinks();
-    const interactive = Boolean(process.stdin.isTTY);
     const overwrite = new Set<string>(); // dests where the repo was chosen over a real dir
 
     // Owned names blocked by a real dir (a tool clobbered our link). One prompt per
@@ -51,14 +84,20 @@ export const command = defineCommand({
       // Identical copies across harnesses => one common skill; divergent copies stay per-harness.
       const common = group.length >= 2 && group.every((g) => treeEqual(g.dest, group[0].dest));
       const where = common ? `common/${format}/` : `each harness's own ${format}/`;
-      const adopt = await r.prompter.select<"leave" | "adopt">({
+      const action = await r.prompter.select<"leave" | "adopt" | "delete">({
         message: `${entry} (${format}) self-installed in ${group.map((g) => g.harness).join(", ")} — unmanaged`,
         options: [
           { label: "leave it (not agentkit's)", value: "leave" },
           { label: `adopt into ${where} then link`, value: "adopt" },
+          { label: "delete from every harness", value: "delete" },
         ],
       });
-      if (adopt !== "adopt") continue;
+      if (action === "delete") {
+        for (const g of group) fs.rmSync(g.dest, { recursive: true, force: true });
+        r.reporter.success(`deleted ${entry} from ${group.map((g) => g.harness).join(", ")}`);
+        continue;
+      }
+      if (action !== "adopt") continue;
       if (common) {
         moveTree(group[0].dest, path.join(REPO, "common", format, entry)); // keep one; the link pass replaces the copies
         for (const g of group.slice(1)) fs.rmSync(g.dest, { recursive: true, force: true });

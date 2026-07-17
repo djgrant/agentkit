@@ -1,16 +1,35 @@
 {
-  "$comment": "Canonical MCP server topology, projected into every harness by `pok sync`. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all).",
+  "$comment": "Canonical MCP server topology, projected into every harness by `pok sync`. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all). Live servers on ids this file doesn't own are flagged at sync: delete them, or let sync record them under `unmanaged` (per harness) to leave them alone.",
   "servers": {
     "context7": {
       "transport": "stdio",
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp", "--api-key", "${CONTEXT7_API_KEY}"]
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "${CONTEXT7_API_KEY}"
+      ]
     },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--autoConnect"],
-      "targets": ["opencode", "amp"]
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--autoConnect"
+      ],
+      "targets": [
+        "opencode",
+        "amp"
+      ]
     }
+  },
+  "unmanaged": {
+    "codex": [
+      "playwright",
+      "node_repl",
+      "computer-use"
+    ]
   }
 }

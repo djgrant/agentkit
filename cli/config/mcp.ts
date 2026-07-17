@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { REPO, SERVERS_FILE, SECRETS_FILE } from "./paths.ts";
-import { readJson } from "../lib/fs.ts";
+import { readJson, writeJson } from "../lib/fs.ts";
 import { loadEnv } from "../lib/env.ts";
 import { jsonFileStore, tomlTablesStore } from "../lib/store.ts";
 import { renderServers, compact, type Server, type Dialect } from "../lib/mcp.ts";
@@ -9,23 +9,45 @@ export interface McpTarget {
   name: string;
   dialect: Dialect;
   ownedIds: string[];
+  unmanagedIds: string[];
   liveServers: () => Record<string, unknown>;
   desiredServers: Record<string, unknown>;
 }
 
 export function mcpTargets(): McpTarget[] {
-  const source = servers();
+  const manifest = readJson(SERVERS_FILE);
+  const source: Record<string, Server> = manifest.servers ?? {};
+  const unmanaged: Record<string, string[]> = manifest.unmanaged ?? {};
   const env = loadEnv(SECRETS_FILE);
   return Object.entries(DIALECTS).map(([name, dialect]) => ({
     name,
     dialect,
     ownedIds: Object.keys(source),
+    unmanagedIds: unmanaged[name] ?? [],
     liveServers: () => dialect.store.read(),
     desiredServers: renderServers(source, name, dialect, env),
   }));
 }
 
 export const servers = (): Record<string, Server> => readJson(SERVERS_FILE).servers ?? {};
+
+/** Live server ids the manifest neither owns nor lists as unmanaged. */
+export const foreignIds = (target: McpTarget): string[] =>
+  Object.keys(target.liveServers()).filter(
+    (id) => !target.ownedIds.includes(id) && !target.unmanagedIds.includes(id),
+  );
+
+/** Record ids in the manifest's `unmanaged` map so sync stops asking about them. */
+export function markUnmanaged(entries: { harness: string; id: string }[]) {
+  const manifest = readJson(SERVERS_FILE);
+  const unmanaged: Record<string, string[]> = manifest.unmanaged ?? {};
+  for (const { harness, id } of entries) {
+    const ids = (unmanaged[harness] ??= []);
+    if (!ids.includes(id)) ids.push(id);
+  }
+  manifest.unmanaged = unmanaged;
+  writeJson(SERVERS_FILE, manifest);
+}
 
 export const DIALECTS: Record<string, Dialect> = {
   claude: {

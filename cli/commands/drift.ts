@@ -1,5 +1,5 @@
 import { defineCommand } from "@pokit/core";
-import { mcpTargets } from "../config/mcp.ts";
+import { mcpTargets, foreignIds } from "../config/mcp.ts";
 import { scanLinks } from "../lib/links.ts";
 
 export const command = defineCommand({
@@ -7,9 +7,13 @@ export const command = defineCommand({
   run: async (r) => {
     let drifted = false;
 
-    const mcpRows = mcpTargets().map(({ name, liveServers, desiredServers, ownedIds }) => {
+    const mcpRows = mcpTargets().map((target) => {
+      const { name, liveServers, desiredServers, ownedIds } = target;
       const live = pick(liveServers(), ownedIds);
-      const changes = changedServers(live, desiredServers);
+      const changes = [
+        ...changedServers(live, desiredServers),
+        ...foreignIds(target).map((id) => `? ${id}`),
+      ];
       drifted ||= changes.length > 0;
       const status = changes.length ? "drifted" : "in sync";
       return `| \`${name}\` | ${status} | ${changes.length ? changes.map((c) => `\`${c}\``).join(" ") : "—"} |`;
