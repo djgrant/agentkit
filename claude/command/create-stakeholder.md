@@ -1,10 +1,10 @@
 ---
 description: Save THIS session as a "stakeholder session", and adopt the stakeholder role
 argument-hint: <name> [description]
-allowed-tools: Bash($HOME/Repos/djgrant/agentkit/claude/scripts/save_stakeholder.py:*)
+allowed-tools: Bash($HOME/Repos/operations/agentkit/claude/scripts/save_stakeholder.py:*)
 ---
 
-!`$HOME/Repos/djgrant/agentkit/claude/scripts/save_stakeholder.py "" "" "$ARGUMENTS"`
+!`$HOME/Repos/operations/agentkit/claude/scripts/save_stakeholder.py "" "" "$ARGUMENTS"`
 
 If the save above reported that a stakeholder with that name already exists
 (exit code 2), do **not** adopt the role yet. Show the user the existing
