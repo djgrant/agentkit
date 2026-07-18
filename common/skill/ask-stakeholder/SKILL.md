@@ -13,14 +13,14 @@ conversation with the fork.
 ## Consult one stakeholder
 
 ```bash
-"$HOME/Repos/djgrant/agentkit/claude/scripts/ask_stakeholder.py" <name> "<your question>"
+"$HOME/Repos/operations/agentkit/claude/scripts/ask_stakeholder.py" <name> "<your question>"
 ```
 
 It prints the answer, then a final line `SESSION: <id>`. To ask a **follow-up in the
 same conversation**, pass that id back as a third argument:
 
 ```bash
-"$HOME/Repos/djgrant/agentkit/claude/scripts/ask_stakeholder.py" <name> "<follow-up>" <id>
+"$HOME/Repos/operations/agentkit/claude/scripts/ask_stakeholder.py" <name> "<follow-up>" <id>
 ```
 
 The first call forks the stakeholder's canonical session (leaving it pristine); the

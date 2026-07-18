@@ -22,6 +22,20 @@
   "model": "opus[1m]",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '$HOME/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "disableRemoteControl": true,
   "disableWorkflows": true,
   "disableArtifact": true,
@@ -32,8 +46,7 @@
   },
   "enabledPlugins": {
     "plannotator@plannotator": true,
-    "swift-lsp@claude-plugins-official": true,
-    "hmux@hmux": true
+    "swift-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "plannotator": {
@@ -41,16 +54,10 @@
         "source": "github",
         "repo": "backnotprop/plannotator"
       }
-    },
-    "hmux": {
-      "source": {
-        "source": "directory",
-        "path": "$HOME/Repos/djgrant/humans.sh"
-      }
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
+  "effortLevel": "low",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true
 }
