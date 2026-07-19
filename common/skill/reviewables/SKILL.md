@@ -1,21 +1,19 @@
 ---
 name: reviewables
-description: How to write a reviewable post that distills plans, changesets and proposals for easy consumption by the user.
+description: How to write a reviewable artefact that distills plans, changesets and proposals for easy consumption by the user.
 ---
 
-# How to Write a Reviewable
+## Where to Store Reviewables
 
-A reviewable is a post that distills plans, changesets and proposals for easy consumption by the user.
+Unless directed otherwise, store the reviewable as either a markdown or html file in ~/Reviewables.
 
----
+## How to Write a Reviewable
 
 ## 1. Narrative Model
 
 Identify a problem or proposition, and build – brick by brick - a conceptual model of the change, providing salient code examples to guide the reader to an understanding of a solution.
 
 You are required to be concise but this does not mean using language so economically that the reader is presented with terse sentences that are difficult to parse. It means that you identify the most important and salient ground truths, and surface them clear explanations. Include references to types, short code snippets (pseudo code is allowed), references to packages files etc for the purposes of properly orientating the user. 
-
----
 
 ## 2. The Narrative Arc
 
@@ -44,8 +42,6 @@ A codegen step reads the tool schema and emits TypeScript interfaces and a thin 
 **Result**
 Consumers get compile-time type safety and autocomplete without writing boilerplate. The generated client is ~40 lines per tool.
 ```
-
----
 
 ## 3. Section Types
 
@@ -89,8 +85,6 @@ await db.advisoryUnlock(
 
 **Use:** Data flow, architecture, type hierarchies. One concept per diagram.
 
----
-
 ## 4. Tone and Constraints
 
 ### Character limit
@@ -104,8 +98,6 @@ No marketing language. No high-level claims. State facts. Describe what was done
 ### Grounding: Facts over assertions
 
 Every sentence should trace to a concrete decision, a measurable outcome, or a specific code change. If it could appear in a press release, delete it.
-
----
 
 ## 5. Style Rules
 
@@ -156,8 +148,6 @@ Instead, ground every clause in something the reader can picture:
 > Problem: When a requirement stops referencing a domain type — say `OrderItem` is removed from the billing spec — nothing warns you. 
 > Approach: We could walk each spec file at build-time, collect every type reference, and flag any type that no spec still points to.
 > Result: Orphaned types could be flagged or fail the build. A rename like `OrderItem` → `LineItem` would surface stale specs before they reach main.
-
----
 
 ## 6. Before You Publish
 
