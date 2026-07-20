@@ -1,6 +1,6 @@
 ---
 name: reviewables
-description: How to write a reviewable artefact that distills plans, changesets and proposals for easy consumption by the user.
+description: How to write a reviewable artefact. Use this for writing up plans, changesets and proposals.
 ---
 
 ## Where to Store Reviewables
