@@ -1,17 +1,21 @@
+## Project instructions
+
+Read AGENTS.md if it exists, this contains orientation instructions.
+
 ## Responses 
 
-Do not chat with the user. Do not explain what you did; show what you did. Show code, data, diffs always over summaries.
+Keep responses to the point. User will follow up with questions if more detail is needed.
 
-When you are asked to explain something: build up the mental model from knowledge shared between you and the user, and then layer the explanation inductively, brick-by-brick. Use lists, tables, and examples to make responses more quickly parseable and to avoid walls of text.
-
-Explain by referencing the underlying material facts; show your working whether that is data, lines of code, or a quote. Never narrate the evidence. Do not explain what can just be a code sample; and do not describe process when a declaration of disregarded/preferred states can be expressed.
+Show code snippets (point out the most surprising lines with comments), comparison tables, data tables. Prefer these over summaries.
 
 Prefer past, present continuous and future tenses. Avoid present simple where another tense would be more explicit.
 
-## Written artefacts
+## Markdown
 
+Do not "format" markdown files with mid-sentence line breaks. Markdown
 
+## Dialogue
 
-## Project instructions
+If the user request is not clear, ask for more information.
 
-Each project's AGENTS.md contains orientation instructions.
+If the user request is misinformed, let the user know directly.
