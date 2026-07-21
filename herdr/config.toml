@@ -1,0 +1,8 @@
+onboarding = false
+[ui]
+agent_panel_sort = "spaces"
+
+[[keys.command]]
+key = "prefix+i"
+type = "shell"
+command = "printf 'herdr://%s:%s' \"$HERDR_SESSION\" \"$(herdr pane current | jq -r .result.pane.pane_id)\" | pbcopy"
