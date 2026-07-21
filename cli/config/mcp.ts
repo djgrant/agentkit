@@ -68,11 +68,25 @@ export const DIALECTS: Record<string, Dialect> = {
   },
   codex: {
     store: tomlTablesStore("~/.codex/config.toml", "mcp_servers"),
-    secrets: "inline", // config.toml has no env interpolation
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ url: s.url, http_headers: s.headers })
-        : compact({ command: s.command, args: s.args ?? [], env: s.env }),
+    secrets: "passthrough", // the stdio launcher resolves placeholders from the ignored secrets file
+    render: (s) => {
+      if (s.transport === "http") {
+        if (JSON.stringify(s).includes("${")) {
+          throw new Error("Codex HTTP MCP servers cannot safely reference secrets in tracked config");
+        }
+        return compact({ url: s.url, http_headers: s.headers });
+      }
+      if (!s.command) throw new Error("Codex stdio MCP servers require a command");
+      return {
+        command: "bun",
+        args: [
+          path.join(REPO, "cli/scripts/run-mcp.ts"),
+          JSON.stringify(s.env ?? {}),
+          s.command,
+          ...(s.args ?? []),
+        ],
+      };
+    },
   },
   agy: {
     store: jsonFileStore("~/.gemini/config/mcp_config.json", "mcpServers"),
