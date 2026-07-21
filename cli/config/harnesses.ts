@@ -14,4 +14,6 @@ export const HARNESSES: Record<string, Harness> = {
   amp: { base: "~/.config/amp", formats: { skill: "skills" } },
   droid: { base: "~/.factory", formats: { skill: "skills" } },
   pi: { base: "~/.pi/agent", formats: { skill: "skills", command: "prompts" } },
+  herdr: { base: "~/.config/herdr", formats: {}, files: ["config.toml"] }, // not an agent harness, but same config-sync model
+
 };
