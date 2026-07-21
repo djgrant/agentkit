@@ -5,4 +5,4 @@ agent_panel_sort = "spaces"
 [[keys.command]]
 key = "prefix+i"
 type = "shell"
-command = "printf 'herdr://%s:%s' \"$HERDR_SESSION\" \"$(herdr pane current | jq -r .result.pane.pane_id)\" | pbcopy"
+command = "herdr pane current | jq -j --arg s \"$HERDR_SESSION\" '.result.pane.pane_id / \":\" | \"herdr://\\(.[0])/\\(.[1])@\\($s)\"' | pbcopy"
