@@ -6,7 +6,7 @@ export interface Harness {
 
 export const HARNESSES: Record<string, Harness> = {
   claude: { base: "~/.claude", formats: { skill: "skills", command: "commands" }, files: ["settings.json", "CLAUDE.md"] },
-  codex: { base: "~/.codex", formats: { skill: "skills" } },
+  codex: { base: "~/.codex", formats: { skill: "skills" }, files: ["config.toml", "AGENTS.md"] },
   kiro: { base: "~/.kiro", formats: { skill: "skills" } },
   agents: { base: "~/.agents", formats: { skill: "skills" } }, // cross-agent standard; amp and codex read it too
   gemini: { base: "~/.gemini", formats: { skill: "skills" } }, // shared with the Antigravity CLI (agy)
