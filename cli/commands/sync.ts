@@ -113,7 +113,7 @@ export const command = defineCommand({
         await g.activity(name, () => {
           const base = untilde(harness.base);
           for (const file of harness.files ?? []) {
-            ensureSymlink(path.join(REPO, name, file), path.join(base, file));
+            ensureSymlink(path.join(REPO, name, file), path.join(base, file), true);
           }
           for (const [format, native] of Object.entries(harness.formats)) {
             const dir = path.join(base, native);
