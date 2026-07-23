@@ -11,6 +11,13 @@
         "${CONTEXT7_API_KEY}"
       ]
     },
+    "playwright": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "npx",
@@ -27,7 +34,6 @@
   },
   "unmanaged": {
     "codex": [
-      "playwright",
       "node_repl",
       "computer-use"
     ]
