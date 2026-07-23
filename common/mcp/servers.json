@@ -18,6 +18,14 @@
         "@playwright/mcp@latest"
       ]
     },
+    "webmcp": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp-b/webmcp-local-relay@latest"
+      ]
+    },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "npx",
