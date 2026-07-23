@@ -20,11 +20,8 @@
     },
     "webmcp": {
       "transport": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@mcp-b/webmcp-local-relay@latest"
-      ]
+      "command": "$HOME/Repos/operations/agentkit/common/mcp/bin/webmcp-relay",
+      "args": []
     },
     "chrome-devtools": {
       "transport": "stdio",
