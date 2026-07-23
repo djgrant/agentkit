@@ -59,6 +59,15 @@
       ],
       "enabled": true
     },
+    "webmcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@mcp-b/webmcp-local-relay@latest"
+      ],
+      "enabled": true
+    },
     "chrome-devtools": {
       "type": "local",
       "command": [
