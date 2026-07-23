@@ -40,13 +40,6 @@
     }
   },
   "mcp": {
-    "webmcp": {
-      "type": "local",
-      "command": [
-        "$HOME/Repos/operations/agentkit/common/mcp/bin/webmcp-relay"
-      ],
-      "enabled": true
-    },
     "context7": {
       "type": "local",
       "command": [
