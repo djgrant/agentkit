@@ -1,5 +1,0 @@
-#!/bin/sh
-# Shim over macOS `open` that forces Chrome. The webmcp relay hardcodes
-# `open <url>` (system default browser); putting this dir first on PATH
-# makes its webmcp_open_page tool target Chrome instead.
-exec /usr/bin/open -a "Google Chrome" "$@"
