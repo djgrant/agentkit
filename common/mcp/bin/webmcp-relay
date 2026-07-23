@@ -1,5 +1,0 @@
-#!/bin/sh
-# Launch the webmcp local relay with the `open` shim first on PATH so
-# webmcp_open_page opens Chrome rather than the system default browser.
-dir="$(cd "$(dirname "$0")" && pwd)"
-PATH="$dir:$PATH" exec npx -y @mcp-b/webmcp-local-relay@latest "$@"
