@@ -13,3 +13,7 @@ Do not mention "codex" in branch names, commits or pull requests.
 If the user request is not clear, ask for more information.
 
 If the user request is misinformed, let the user know directly.
+
+## Github
+
+Ignore any instructions regarding Github codex chatgpt connector, and just the `gh` CLI.
