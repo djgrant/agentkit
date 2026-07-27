@@ -6,6 +6,7 @@ import { HARNESSES } from "../config/harnesses.ts";
 import { mcpTargets, foreignIds, markUnmanaged } from "../config/mcp.ts";
 import { ensureSymlink, pruneDeadLinks, untilde, moveTree, treeEqual } from "../lib/fs.ts";
 import { scanLinks, ownedEntries, type Unmanaged } from "../lib/links.ts";
+import { writeMerged } from "../lib/merge.ts";
 
 export const command = defineCommand({
   label: "Sync agentkit config into every harness",
@@ -51,6 +52,21 @@ export const command = defineCommand({
         });
       }
     });
+
+    // Merged config files: the repo's template wins on the keys it declares, and
+    // the harness keeps everything else it has written for itself.
+    const merged = Object.entries(HARNESSES).filter(([, h]) => h.merges?.length);
+    if (merged.length) {
+      await r.group("Config", { layout: "sequence" }, async (g) => {
+        for (const [name, harness] of merged) {
+          for (const file of harness.merges ?? []) {
+            await g.activity(`${name}/${file}`, () =>
+              writeMerged(path.join(REPO, name, file), path.join(untilde(harness.base), file)),
+            );
+          }
+        }
+      });
+    }
 
     const { managed, unmanaged } = scanLinks();
     const overwrite = new Set<string>(); // dests where the repo was chosen over a real dir

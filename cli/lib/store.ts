@@ -4,6 +4,7 @@
 
 import * as fs from "node:fs";
 import { readJson, writeJson, untilde } from "./fs.ts";
+import { dropSections, readText } from "./merge.ts";
 
 type Block = Record<string, unknown>;
 
@@ -41,22 +42,6 @@ export const tomlTablesStore = (file: string, prefix: string): McpStore => ({
     fs.writeFileSync(untilde(file), next);
   },
 });
-
-const readText = (file: string) =>
-  fs.existsSync(untilde(file)) ? fs.readFileSync(untilde(file), "utf8") : "";
-
-/** Remove every [section] (header through following lines) the predicate claims. */
-function dropSections(text: string, claimed: (section: string) => boolean): string {
-  let dropping = false;
-  return text
-    .split("\n")
-    .filter((line) => {
-      const header = line.match(/^\s*\[\[?\s*(.+?)\s*\]\]?/);
-      if (header) dropping = claimed(header[1]);
-      return !dropping;
-    })
-    .join("\n");
-}
 
 /** "prefix.id.sub" -> ["prefix", "id"]. Assumes ids without dots; quotes stripped. */
 const splitKey = (section: string): [string, string] => {

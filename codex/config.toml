@@ -1,0 +1,75 @@
+# Codex settings this repo owns. Merged into ~/.codex/config.toml by `pok sync`;
+# never symlinked, because Codex writes machine state (trusted project paths,
+# hook hashes, dismissed notices, marketplace caches) into the same file.
+#
+# Ownership is whatever this file declares: a root key or an exact section here
+# replaces its live counterpart, and everything else in the live file is left
+# alone. So `[tui]` below does not disturb `[tui.model_availability_nux]`, and
+# `[mcp_servers.*]` is absent because those tables come from common/mcp.
+
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+personality = "friendly"
+approvals_reviewer = "auto_review"
+tool_output_token_limit = 25000
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[features]
+hooks = true
+shell_snapshot = true
+js_repl = false
+
+[notice]
+hide_gpt5_1_migration_prompt = true
+hide_full_access_warning = true
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "context-used", "five-hour-limit"]
+
+[desktop]
+appearanceTheme = "system"
+conversationDetailMode = "STEPS_COMMANDS"
+ambient-suggestions-enabled = false
+followUpQueueMode = "queue"
+selected-avatar-id = "rocky"
+avatar-overlay-mascot-width-px = 80
+dock-icon-preference = "codex-system"
+
+[desktop.open-in-target-preferences]
+global = "zed"
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."google-drive@openai-curated"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."hmux@hmux"]
+enabled = false

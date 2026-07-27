@@ -19,7 +19,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5[1m]",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
   "hooks": {
@@ -57,7 +56,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "low",
+  "effortLevel": "medium",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true
 }
