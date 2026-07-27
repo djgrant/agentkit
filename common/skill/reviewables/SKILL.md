@@ -1,6 +1,6 @@
 ---
 name: reviewables
-description: How to write a reviewable artefact. Use this for writing up plans, changesets and proposals.
+description: How to write a reviewable plan, changeset or proposal. Use this on user request only.
 ---
 
 ## Where to Store Reviewables
