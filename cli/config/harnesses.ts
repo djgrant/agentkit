@@ -2,11 +2,12 @@ export interface Harness {
   base: string;
   formats: Record<string, string>; // repo format dir -> harness's native subdir
   files?: string[]; // config files linked straight into base
+  merges?: string[]; // config files the harness writes state into: merged, never linked (see lib/merge.ts)
 }
 
 export const HARNESSES: Record<string, Harness> = {
   claude: { base: "~/.claude", formats: { skill: "skills", command: "commands" }, files: ["settings.json", "CLAUDE.md"] },
-  codex: { base: "~/.codex", formats: { skill: "skills" }, files: ["config.toml", "AGENTS.md"] },
+  codex: { base: "~/.codex", formats: { skill: "skills" }, files: ["AGENTS.md"], merges: ["config.toml"] },
   kiro: { base: "~/.kiro", formats: { skill: "skills" } },
   agents: { base: "~/.agents", formats: { skill: "skills" } }, // cross-agent standard; amp and codex read it too
   gemini: { base: "~/.gemini", formats: { skill: "skills" } }, // shared with the Antigravity CLI (agy)
