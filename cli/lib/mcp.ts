@@ -12,6 +12,7 @@ export interface Server {
   url?: string;
   headers?: Record<string, string>;
   targets?: string[]; // omitted = every target
+  enabled?: boolean; // omitted = true; false keeps the definition but projects it nowhere
 }
 
 /**
@@ -31,7 +32,14 @@ export interface Dialect {
 export const compact = (obj: Record<string, unknown>): Record<string, unknown> =>
   Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined));
 
-/** The servers targeting `name`, rendered in the dialect with secrets resolved. */
+/** A server the manifest defines but does not want live anywhere. */
+export const isEnabled = (server: Server): boolean => server.enabled !== false;
+
+/**
+ * The servers targeting `name`, rendered in the dialect with secrets resolved.
+ * Disabled servers are dropped here rather than in the manifest reader: they stay
+ * owned ids, so sync prunes them from the live config instead of asking about them.
+ */
 export function renderServers(
   servers: Record<string, Server>,
   name: string,
@@ -40,7 +48,7 @@ export function renderServers(
 ): Record<string, unknown> {
   const rendered = Object.fromEntries(
     Object.entries(servers)
-      .filter(([, server]) => !server.targets || server.targets.includes(name))
+      .filter(([, server]) => isEnabled(server) && (!server.targets || server.targets.includes(name)))
       .map(([id, server]) => [id, dialect.render(server)]),
   );
   return resolveSecrets(rendered, dialect.secrets, env);

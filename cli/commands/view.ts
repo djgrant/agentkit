@@ -2,6 +2,7 @@ import { defineCommand } from "@pokit/core";
 import * as path from "node:path";
 import { REPO, SERVERS_FILE, SECRETS_FILE } from "../config/paths.ts";
 import { servers } from "../config/mcp.ts";
+import { isEnabled } from "../lib/mcp.ts";
 import { loadEnv, placeholders } from "../lib/env.ts";
 
 export const command = defineCommand({
@@ -13,7 +14,7 @@ export const command = defineCommand({
 
     const serverRows = Object.entries(list).map(([id, s]) => {
       const endpoint = s.transport === "http" ? s.url : [s.command, ...(s.args ?? [])].join(" ");
-      const targets = (s.targets ?? ["all"]).join(", ");
+      const targets = isEnabled(s) ? (s.targets ?? ["all"]).join(", ") : "**disabled**";
       return `| \`${id}\` | ${targets} | ${s.transport} | \`${endpoint}\` |`;
     });
 
