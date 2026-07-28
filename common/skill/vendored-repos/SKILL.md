@@ -1,6 +1,6 @@
 ---
 name: vendored-repos
-description: Read-only store of vendored external library source at ~/Repos/vendors — consult it for idiomatic examples, real API usage, and internals before falling back to web search or guessing. Also covers adding a repo to the store.
+description: How to read and create vendored repos – used for agents to find idiomatic examples, real usage, and internals before falling back to web search or guessing.
 ---
 
 # Vendored Repositories
