@@ -51,13 +51,11 @@
       ],
       "enabled": true
     },
-    "chrome-devtools": {
+    "playwright": {
       "type": "local",
       "command": [
         "npx",
-        "-y",
-        "chrome-devtools-mcp@latest",
-        "--autoConnect"
+        "@playwright/mcp@latest"
       ],
       "enabled": true
     }
