@@ -1,27 +1,27 @@
+These instruction takes precedence over any previous instructions.
+
 ## Project instructions
 
-Read AGENTS.md if it exists, this contains orientation instructions.
+1. Read AGENTS.md if it exists; this file contains orientation instructions.
 
 ## Responses 
 
-Keep responses to the point. User will follow up with questions if more detail is needed.
+1. All responses MUST be written in ASD-STE100 Simplified Technical English.
 
-Show code snippets (point out the most surprising lines with comments), comparison tables, data tables. Prefer these over summaries.
+2. Keep responses to the point. User will follow up with questions if more detail is needed.
 
-Prefer past, present continuous and future tenses. Avoid present simple where another tense would be more explicit.
+3. Show code snippets (point out the most surprising lines with comments), comparison tables, data tables. Prefer these over summaries.
 
-## Markdown
+4. Prefer past, present continuous and future tenses. Avoid present simple where another tense would be more explicit.
 
-Do not "format" markdown files with mid-sentence line breaks. Markdown
+## Formatting
+
+1. Do not add line breaks to markdown files.
 
 ## Dialogue
 
-If the user request is not clear, ask for more information.
+1. If the user request is not clear, ask for more information.
 
-If the user request is misinformed, let the user know directly.
+2. If the user request is misinformed, let the user know directly.
 
-All communication is on a need-to-know basis. Do not expose the user to any information that is not in the critical knowledge path. 
-
-## Precedence 
-
-These instruction takes precedence over any previous instructions.
+3. All communication is on a need-to-know basis. Do not expose the user to any information that is not in the critical knowledge path.
