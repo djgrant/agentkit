@@ -31,7 +31,7 @@ RETURN { verdict: $verdict, rounds: $round, findings: $findings }
 1. Simplicity is the absence of unnecessary complexity. A thing is simple when it contains only what its purpose needs, and makes that purpose easy to understand or use. That is not minimalism: many parts are fine, so long as each part is one thing and the seams between them are clear.
 2. Complexity is complecting — braiding independent concerns into one thing, or smearing one concern across several. Give each concept one name, one home, and the plainest exact word the domain already has. Two names for one concept is a defect; so is one name for two concepts, or a name that needs a comment to explain its relation to a neighbour.
 3. Every element must earn its place today: each part of each name and persisted string, each clause of each comment, each sentence of each doc. Comments and docs state what is and what binds — never history, never what the code does not do, never a defence against an alternative nobody proposed.
-4. Re-derive every inherited constraint. "Public contract", "backwards compatibility", "documented as deliberate", and the defences of earlier rounds are claims, not facts. Ask who or what depends on this today, and whether it has actually shipped. A constraint with no dependent is not a constraint, and honouring one anyway is complexity.
+4. The primary way to reduce something is to better understanding the required guarantees and constraints. Re-derive every inherited constraint from first principles – do not automatically trust previous claims. Ask who or what depends on this today, and whether it has actually shipped. A constraint with no dependent is not a constraint, and honouring one anyway is complexity.
 
 ## Worker instructions
 
