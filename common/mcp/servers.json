@@ -16,8 +16,7 @@
       "command": "npx",
       "args": [
         "@playwright/mcp@latest"
-      ],
-      "enabled": false
+      ]
     },
     "chrome-devtools": {
       "transport": "stdio",
@@ -26,7 +25,8 @@
         "-y",
         "chrome-devtools-mcp@latest",
         "--autoConnect"
-      ]
+      ],
+      "enabled": false
     }
   },
   "unmanaged": {
