@@ -1,5 +1,5 @@
 {
-  "$comment": "Canonical MCP server topology, projected into every harness by `pok sync`. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all). Live servers on ids this file doesn't own are flagged at sync: delete them, or let sync record them under `unmanaged` (per harness) to leave them alone.",
+  "$comment": "Canonical MCP server topology, projected into every harness by `pok sync`. This is the ONE file you edit to add/remove servers. Secrets live as ${VAR} placeholders only — never paste raw credentials here. Real values go in common/mcp/secrets.env (gitignored). Optional per-server `targets` restricts which harnesses receive it (default: all). Set `\"enabled\": false` to keep a definition on the shelf — sync removes it from every live config but still treats the id as ours. Live servers on ids this file doesn't own are flagged at sync: delete them, or let sync record them under `unmanaged` (per harness) to leave them alone.",
   "servers": {
     "context7": {
       "transport": "stdio",
@@ -16,7 +16,8 @@
       "command": "npx",
       "args": [
         "@playwright/mcp@latest"
-      ]
+      ],
+      "enabled": false
     },
     "chrome-devtools": {
       "transport": "stdio",
