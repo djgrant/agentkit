@@ -58,5 +58,5 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "medium",
   "autoMemoryEnabled": false,
-  "skipDangerousModePermissionPrompt": true
+  "model": "claude-fable-5[1m]"
 }
