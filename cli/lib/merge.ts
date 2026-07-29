@@ -36,9 +36,37 @@ export function mergeToml(template: string, live: string): string {
     .join("\n\n") + "\n";
 }
 
+/**
+ * Merge a JSON template over a live JSON config. Ownership is the template's
+ * shape: objects recurse, so a template of `{"hooks": {"Stop": []}}` claims
+ * only `hooks.Stop` — sibling keys the live file holds (other hook events,
+ * secrets, machine state) survive untouched. Non-object template values are
+ * leaves and replace whatever the live file has there.
+ */
+export function mergeJson(template: string, live: string): string {
+  const merged = deepMerge(parseJson(template), parseJson(live));
+  return JSON.stringify(merged, null, 2) + "\n";
+}
+
+const parseJson = (text: string): unknown => (text.trim() ? JSON.parse(text) : {});
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null && !Array.isArray(v);
+
+function deepMerge(template: unknown, live: unknown): unknown {
+  if (!isRecord(template) || !isRecord(live)) return template;
+  const out: Record<string, unknown> = { ...live }; // live key order kept; new template keys append
+  for (const [key, value] of Object.entries(template)) out[key] = deepMerge(value, live[key]);
+  return out;
+}
+
+/** Merge a template over a live config in the file's own format. */
+export const merge = (template: string, live: string, file: string) =>
+  file.endsWith(".json") ? mergeJson(template, live) : mergeToml(template, live);
+
 /** Whether a live file already matches what a merge would produce. */
-export const mergedInSync = (template: string, live: string) =>
-  mergeToml(template, live).trim() === live.trim();
+export const mergedInSync = (template: string, live: string, file: string) =>
+  merge(template, live, file).trim() === live.trim();
 
 /** Read a file, or "" when it doesn't exist yet. */
 export const readText = (file: string) =>
@@ -109,7 +137,7 @@ export function writeMerged(templateFile: string, liveFile: string): { changed: 
   const dest = untilde(liveFile);
   const template = readText(templateFile);
   const live = readText(dest);
-  const next = mergeToml(template, live);
+  const next = merge(template, live, liveFile);
   if (next === live) return { changed: false };
   // A link here is the pre-merge layout: the live path pointed straight at the
   // repo file. Removing it first stops the write landing back in the repo.

@@ -33,7 +33,7 @@ export const command = defineCommand({
     const merges = mergeFiles();
     if (merges.length) {
       const rows = merges.map(({ name, file, template, live }) => {
-        const synced = mergedInSync(readText(template), readText(live));
+        const synced = mergedInSync(readText(template), readText(live), file);
         drifted ||= !synced;
         return `| \`${name}\` | \`${file}\` | ${synced ? "in sync" : "drifted"} |`;
       });
