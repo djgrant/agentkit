@@ -44,7 +44,7 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "plannotator@plannotator": true,
+    "plannotator@plannotator": false,
     "swift-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
