@@ -22,6 +22,12 @@ owns, and `pok sync` merges those over the live file, leaving every key the
 template doesn't name in place. `pok drift` warns if a home path ever appears in
 a merged template, which is the signature of live state leaking back in.
 
+JSON files merge too, with ownership following the template's shape: objects
+recurse, leaves replace. `codex/hooks.json` and `gemini/settings.json` use this
+to own a single hook event each (keeping third-party installers from planting
+hooks there) while the live files keep their machine-local and secret-bearing
+keys out of git.
+
 ## Layout
 
 - [`common`](common): skills and mcp shared across harnesses

@@ -7,12 +7,12 @@ export interface Harness {
 
 export const HARNESSES: Record<string, Harness> = {
   claude: { base: "~/.claude", formats: { skill: "skills", command: "commands" }, files: ["settings.json", "CLAUDE.md"] },
-  codex: { base: "~/.codex", formats: { skill: "skills" }, files: ["AGENTS.md"], merges: ["config.toml"] },
+  codex: { base: "~/.codex", formats: { skill: "skills" }, files: ["AGENTS.md"], merges: ["config.toml", "hooks.json"] },
   kiro: { base: "~/.kiro", formats: { skill: "skills" } },
   agents: { base: "~/.agents", formats: { skill: "skills" } }, // cross-agent standard; amp and codex read it too
-  gemini: { base: "~/.gemini", formats: { skill: "skills" } }, // shared with the Antigravity CLI (agy)
+  gemini: { base: "~/.gemini", formats: { skill: "skills" }, merges: ["settings.json"] }, // shared with the Antigravity CLI (agy); settings.json holds raw secrets, so it is merged, never linked
   opencode: { base: "~/.config/opencode", formats: { skill: "skill", command: "command" }, files: ["opencode.json", "tui.json"] },
-  amp: { base: "~/.config/amp", formats: { skill: "skills" } },
+  amp: { base: "~/.config/amp", formats: { skill: "skills", plugin: "plugins" } }, // plugin dir scanned so self-installed plugins surface as unmanaged
   droid: { base: "~/.factory", formats: { skill: "skills" } },
   pi: { base: "~/.pi/agent", formats: { skill: "skills", command: "prompts" } },
   herdr: { base: "~/.config/herdr", formats: {}, files: ["config.toml"] }, // not an agent harness, but same config-sync model
