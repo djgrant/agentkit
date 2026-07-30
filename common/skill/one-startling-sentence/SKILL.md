@@ -29,7 +29,7 @@ Divide your paper into four sections.
 
 The abstract is your four sentence summary of the conclusions of your paper. You write this after you have figured out the argument, but it goes at the top of the document. Its primary purpose is to get your paper into the reviewer's A pile. 
 
-An abstract is two acts with four clear statements, each causally linked. In act one we first state the problem (and if it's not self-evident, state why the problem is a problem), then state why the problem exists. In act two, we state our startling sentence, followed by the implication of my startling sentence.
+An abstract is two acts with four clear propositions, each causally linked. In act one we first state the problem (and if it's not self-evident, state why the problem is in fact a problem), then state why the problem exists. In act two, we state our startling sentence, followed by the implication of the startling sentence.
 
 An abstract in this style would be:
 
@@ -39,6 +39,6 @@ An abstract in this style would be:
 
 That's maybe not a great abstract, but you get the idea!
 
-Note how much work the conjunctive words are doing here – "but", "however", "therefore" – these create tension that holds the whole abstract together.
+Note how much work the conjunctiions are doing here – "but", "however", "therefore", "we can solve this by" etc. These create tension that holds the whole abstract together.
 
 I always feel funny writing an abstract this way. The idea I thought was so wonderful when I started writing the paper looks naked and alone sitting there with no support. I resist the temptation to argue for my conclusion in the abstract. I think it gives the reader more incentive to carefully read the rest of the paper. They want to find you how in the world you could possible say such an outrageous thing.
