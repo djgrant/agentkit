@@ -15,8 +15,14 @@
       "transport": "stdio",
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
-      ]
+        "@playwright/mcp@latest",
+        "--extension",
+        "--executable-path",
+        "/Users/coder/Repos/operations/agentkit/common/mcp/chrome-guest.sh"
+      ],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "${PLAYWRIGHT_MCP_EXTENSION_TOKEN}"
+      }
     },
     "chrome-devtools": {
       "transport": "stdio",

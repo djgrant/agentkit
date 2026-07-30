@@ -49,67 +49,85 @@ export function markUnmanaged(entries: { harness: string; id: string }[]) {
   writeJson(SERVERS_FILE, manifest);
 }
 
+/**
+ * Every stdio server launches through run-mcp.ts, which resolves ${NAME}
+ * placeholders from the ignored secrets file at spawn time. Configs and the
+ * launching shell never carry secret values; secrets.env is the one source.
+ */
+const launcher = (s: Server): { command: string; args: string[] } => {
+  if (!s.command) throw new Error("stdio MCP servers require a command");
+  return {
+    command: "bun",
+    args: [
+      path.join(REPO, "cli/scripts/run-mcp.ts"),
+      JSON.stringify(s.env ?? {}),
+      s.command,
+      ...(s.args ?? []),
+    ],
+  };
+};
+
+const guardHttpSecrets = (s: Server) => {
+  if (JSON.stringify(s).includes("${")) {
+    throw new Error("HTTP MCP servers cannot safely reference secrets in tracked config");
+  }
+};
+
 export const DIALECTS: Record<string, Dialect> = {
   claude: {
     store: jsonFileStore("~/.claude.json", "mcpServers"),
-    secrets: "passthrough", // Claude expands ${NAME} from the launching shell env
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ type: "http", url: s.url, headers: s.headers })
-        : compact({ type: "stdio", command: s.command, args: s.args ?? [], env: s.env }),
+    secrets: "passthrough",
+    render: (s) => {
+      if (s.transport === "http") return compact({ type: "http", url: s.url, headers: s.headers });
+      return { type: "stdio", ...launcher(s) };
+    },
   },
   opencode: {
     store: jsonFileStore(path.join(REPO, "opencode/opencode.json"), "mcp"),
-    secrets: "{env:$NAME}", // OpenCode resolves its own secrets
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ type: "remote", url: s.url, headers: s.headers, enabled: true })
-        : compact({ type: "local", command: [s.command, ...(s.args ?? [])], environment: s.env, enabled: true }),
+    secrets: "passthrough",
+    render: (s) => {
+      if (s.transport === "http")
+        return compact({ type: "remote", url: s.url, headers: s.headers, enabled: true });
+      const l = launcher(s);
+      return { type: "local", command: [l.command, ...l.args], enabled: true };
+    },
   },
   codex: {
     store: tomlTablesStore("~/.codex/config.toml", "mcp_servers"),
-    secrets: "passthrough", // the stdio launcher resolves placeholders from the ignored secrets file
+    secrets: "passthrough",
     render: (s) => {
       if (s.transport === "http") {
-        if (JSON.stringify(s).includes("${")) {
-          throw new Error("Codex HTTP MCP servers cannot safely reference secrets in tracked config");
-        }
+        guardHttpSecrets(s);
         return compact({ url: s.url, http_headers: s.headers });
       }
-      if (!s.command) throw new Error("Codex stdio MCP servers require a command");
-      return {
-        command: "bun",
-        args: [
-          path.join(REPO, "cli/scripts/run-mcp.ts"),
-          JSON.stringify(s.env ?? {}),
-          s.command,
-          ...(s.args ?? []),
-        ],
-      };
+      return launcher(s);
     },
   },
   agy: {
     store: jsonFileStore("~/.gemini/config/mcp_config.json", "mcpServers"),
-    secrets: "inline", // Antigravity doesn't interpolate env itself
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ serverUrl: s.url, headers: s.headers })
-        : compact({ command: s.command, args: s.args ?? [], env: s.env }),
+    secrets: "passthrough",
+    render: (s) => {
+      if (s.transport === "http") {
+        guardHttpSecrets(s); // Antigravity doesn't interpolate env itself
+        return compact({ serverUrl: s.url, headers: s.headers });
+      }
+      return launcher(s);
+    },
   },
   amp: {
     store: jsonFileStore("~/.config/amp/settings.json", "amp.mcpServers"),
-    secrets: "passthrough", // Amp expands ${NAME} itself
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ url: s.url, headers: s.headers })
-        : compact({ command: s.command, args: s.args ?? [], env: s.env }),
+    secrets: "passthrough", // Amp expands ${NAME} itself in HTTP headers
+    render: (s) => {
+      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
+      return launcher(s);
+    },
   },
   droid: {
     store: jsonFileStore("~/.factory/mcp.json", "mcpServers"),
-    secrets: "passthrough", // Droid expands ${NAME} itself
-    render: (s) =>
-      s.transport === "http"
-        ? compact({ type: "http", url: s.url, headers: s.headers })
-        : compact({ type: "stdio", command: s.command, args: s.args ?? [], env: s.env }),
+    secrets: "passthrough", // Droid expands ${NAME} itself in HTTP headers
+    render: (s) => {
+      if (s.transport === "http") return compact({ type: "http", url: s.url, headers: s.headers });
+      return { type: "stdio", ...launcher(s) };
+    },
   },
 };
