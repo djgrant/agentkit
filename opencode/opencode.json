@@ -43,19 +43,28 @@
     "context7": {
       "type": "local",
       "command": [
+        "bun",
+        "/Users/coder/Repos/operations/agentkit/cli/scripts/run-mcp.ts",
+        "{}",
         "npx",
         "-y",
         "@upstash/context7-mcp",
         "--api-key",
-        "{env:CONTEXT7_API_KEY}"
+        "${CONTEXT7_API_KEY}"
       ],
       "enabled": true
     },
     "playwright": {
       "type": "local",
       "command": [
+        "bun",
+        "/Users/coder/Repos/operations/agentkit/cli/scripts/run-mcp.ts",
+        "{\"PLAYWRIGHT_MCP_EXTENSION_TOKEN\":\"${PLAYWRIGHT_MCP_EXTENSION_TOKEN}\"}",
         "npx",
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--extension",
+        "--executable-path",
+        "/Users/coder/Repos/operations/agentkit/common/mcp/chrome-guest.sh"
       ],
       "enabled": true
     }
