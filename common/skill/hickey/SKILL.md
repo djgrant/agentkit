@@ -1,50 +1,78 @@
 ---
 name: hickey
-description: Simplify a target until an adversarial Rich Hickey critic signs off. Ralph with a judge; expensive. Requires MDZ skill.
-input: $target, $worker, $critic, $max-rounds?
+description: Hill-climbing loop to simplify a target. Use on request only. Requires reading MDZ skill.
+input: $target, $explorer?, $worker?, $reviewer?, $max-rounds?
 ---
 
 $max-rounds = $max-rounds ?? 10
 $round = 0
-$verdict = ""
-$findings = ""
 
-WHILE $round < $max-rounds AND $verdict != "SATISFIED"
-  SPAWN $worker
-  WITH
-    instruction: #worker-instructions
-    target: $target
-    findings: $findings
+WHILE $round < $max-rounds
+  SPAWN $explorer
+  WITH #explorer-instructions($target)
+
+  IF $explorer SATISFIED THEN
+    BREAK;
+  END
+
+  $batches = Array<set of tasks from $explorers that can be efficiently completed by a single agent>
+
+  FOR $batch of $batches
+    SPAWN $worker 
+    WITH the set of tasks to be completed
+  END
+    
   SPAWN $critic
-  WITH
-    instruction: #critic-instructions
-    target: $target
-  $verdict = the critic's verdict
-  $findings = the critic's required changes, in priority order
+  WITH "Review the work in commits #{commits from $batches}" 
+
+  IF $critic reported issues THEN
+    SPAWN $worker
+    WITH instructions to fix the issues
+  END
+
   $round = $round + 1
 END
 
-RETURN { verdict: $verdict, rounds: $round, findings: $findings }
+RETURN final verdict, rounds completed and summary of findings/changes
 
-## Principles
+## Explorer Instructions
 
-1. Simplicity is the absence of unnecessary complexity. A thing is simple when it contains only what its purpose needs, and makes that purpose easy to understand or use. That is not minimalism: many parts are fine, so long as each part is one thing and the seams between them are clear.
-2. Complexity is complecting — braiding independent concerns into one thing, or smearing one concern across several. Give each concept one name, one home, and the plainest exact word the domain already has. Two names for one concept is a defect; so is one name for two concepts, or a name that needs a comment to explain its relation to a neighbour.
-3. Every element must earn its place today: each part of each name and persisted string, each clause of each comment, each sentence of each doc. Comments and docs state what is and what binds — never history, never what the code does not do, never a defence against an alternative nobody proposed.
-4. The primary way to reduce something is to better understanding the required guarantees and constraints. Re-derive every inherited constraint from first principles – do not automatically trust previous claims. Ask who or what depends on this today, and whether it has actually shipped. A constraint with no dependent is not a constraint, and honouring one anyway is complexity.
+## Role
 
-## Worker instructions
+Our aim today is to simplify #{the $target}. 
 
-Simplify the target by [the principles](#principles). You are one fresh round in a loop, judged by an independent critic between rounds; build on the committed state you find and leave committed, verified state behind.
+Your role is to find the highest impact simplification candidates.
 
-If you were given findings, they are the critic's required changes from the last round. Verify each claim yourself before acting on it, and report any that don't hold, with evidence. If findings are empty, survey the whole target yourself, reading it as a newcomer would — for a branch, the full diff against its base and then the changed files whole, since diffs hide what earlier rounds left alone.
+### The Task
 
-Preserve behaviour except where a finding deliberately changes it. Keep the tests and typecheck green, apply renames everywhere at once — code, tests, docs, persisted-identifier maps — and commit. Report what you changed in terms of the principles, and every inherited constraint you re-derived.
+You will find the highest-impact candidates for simplification. 
 
-## Critic instructions
+You are constrained only to preserve eseential behaviour, not backward compatability.
 
-Hold the target to [the principles](#principles). You review only: no edits, no commits, no new files.
+If the target cannot be simplified, you will short circuit and report SATISFIED. 
 
-Read the target whole, as a newcomer would. Verify claims against reality — run the tests, check registries and dependents, read the upstream source a wrapper wraps — and be concrete: cite files, identifiers, and strings. Issues that pre-date the target don't block; note them separately. Hold the bar exactly where Hickey would: don't pass work because it is close, and don't invent objections — if what remains is genuinely simple, say so. Separate blocking defects from non-blocking nits.
+You are encourage to think out loud and take ephermeral notes as you go through this process.
 
-End your report with exactly one verdict line: `VERDICT: SATISFIED` only if you would sign the target off as simple, otherwise `VERDICT: NOT SATISFIED` followed by the required changes in priority order.
+### Finding Candidates
+
+Passes:
+- A thing is simple when it contains only what its purpose needs, and makes that purpose easy to understand or use. This is distinct from minimalism: many parts are fine, so long as each part is one thing and the seams between them are clear. 
+
+Fails:
+- A thing is complex when it braids independent concerns into one thing, or smears one concern across several things. Two names for one concept is a defect; so is one name for two concepts. Look for high-degrees of connascence (name, type, meaning, position, algorithm, execution, timing, value, identity) across boundaries.
+
+### Unpacking the Candidates
+
+When looking at candidates, start by understanding their constraints; then re-derive those constraints from first principles. Ask: "what would the constraints, and thereby the design, be if I was building from this from scratch?". 
+
+Take the perspective of the consumer. Study the interface. This is where most complexity lives. When the structure is sound, the implementation naturally becomes simpler. Ask: "As things stand, can I change one half of this without touching the other?"
+
+### Defining the Solution
+
+The highest leverage work is often negative work, but simplicity doesn't necessarily demand reduction. The solution may be re-invention. It may be the addition of a new element – whether that's a word, a branch, an operator, or a concept.
+
+The test is always whether the addition or reduction better satisfies the simplification criteria.
+
+### Listing Candidates
+
+Now you have found some canidates, write them down in order of impact. Rank candidates regardless of how much work it will be to implement it.
