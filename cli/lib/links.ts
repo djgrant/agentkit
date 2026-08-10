@@ -5,9 +5,9 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { REPO } from "../config/paths.ts";
+import { REPO, UNMANAGED_FILE } from "../config/paths.ts";
 import { HARNESSES, type Harness } from "../config/harnesses.ts";
-import { ls, untilde } from "./fs.ts";
+import { ls, readJson, untilde, writeJson } from "./fs.ts";
 
 /** An owned entry and how its live destination compares to the repo source. */
 export interface LinkState {
@@ -26,6 +26,21 @@ export interface Unmanaged {
   format: string;
   entry: string;
   dest: string;
+}
+
+type UnmanagedLinks = Record<string, Record<string, string[]>>;
+
+/** Persist entries the user chose to leave alone so sync and drift stop surfacing them. */
+export function markUnmanaged(entries: Unmanaged[]) {
+  const manifest = readJson(UNMANAGED_FILE);
+  const links: UnmanagedLinks = manifest.links ?? {};
+  for (const { harness, format, entry } of entries) {
+    const names = ((links[harness] ??= {})[format] ??= []);
+    if (!names.includes(entry)) names.push(entry);
+    names.sort();
+  }
+  manifest.links = links;
+  writeJson(UNMANAGED_FILE, manifest);
 }
 
 /** Entries agentkit never treats as a linkable skill: dotfiles and the manifest's own SKILL.md. */
@@ -55,6 +70,7 @@ const readlink = (p: string): string | null => {
 export function scanLinks(): { managed: LinkState[]; unmanaged: Unmanaged[] } {
   const managed: LinkState[] = [];
   const unmanaged: Unmanaged[] = [];
+  const ignored: UnmanagedLinks = readJson(UNMANAGED_FILE).links ?? {};
 
   for (const [name, harness] of Object.entries(HARNESSES) as [string, Harness][]) {
     const base = untilde(harness.base);
@@ -77,7 +93,7 @@ export function scanLinks(): { managed: LinkState[]; unmanaged: Unmanaged[] } {
       }
 
       for (const entry of ls(dir)) {
-        if (skippable(entry) || owned.has(entry)) continue;
+        if (skippable(entry) || owned.has(entry) || ignored[name]?.[format]?.includes(entry)) continue;
         const dest = path.join(dir, entry);
         if (readlink(dest) !== null) continue; // symlink -> another tool's, none of our business
         unmanaged.push({ harness: name, format, entry, dest });

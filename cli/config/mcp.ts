@@ -82,6 +82,14 @@ export const DIALECTS: Record<string, Dialect> = {
       return { type: "stdio", ...launcher(s) };
     },
   },
+  cursor: {
+    store: jsonFileStore("~/.cursor/mcp.json", "mcpServers"),
+    secrets: "passthrough",
+    render: (s) => {
+      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
+      return launcher(s);
+    },
+  },
   opencode: {
     store: jsonFileStore(path.join(REPO, "opencode/opencode.json"), "mcp"),
     secrets: "passthrough",

@@ -3,9 +3,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { REPO } from "../config/paths.ts";
 import { HARNESSES } from "../config/harnesses.ts";
-import { mcpTargets, foreignIds, markUnmanaged } from "../config/mcp.ts";
+import { mcpTargets, foreignIds, markUnmanaged as markMcpUnmanaged } from "../config/mcp.ts";
 import { ensureSymlink, pruneDeadLinks, untilde, moveTree, treeEqual } from "../lib/fs.ts";
-import { scanLinks, ownedEntries, type Unmanaged } from "../lib/links.ts";
+import { scanLinks, ownedEntries, markUnmanaged as markLinkUnmanaged, type Unmanaged } from "../lib/links.ts";
 import { writeMerged } from "../lib/merge.ts";
 
 export const command = defineCommand({
@@ -26,11 +26,11 @@ export const command = defineCommand({
         r.reporter.warn(`skipped ${id} (mcp) — live in ${where} but not in the manifest; run \`sync\` in a terminal to resolve`);
         continue;
       }
-      const action = await r.prompter.select<"delete" | "unmanaged">({
+      const action = await r.prompter.select<"delete" | "leave">({
         message: `${id} (mcp) live in ${where} but not in the manifest`,
         options: [
           { label: "delete from the live config(s)", value: "delete" },
-          { label: "mark unmanaged (leave it, stop asking)", value: "unmanaged" },
+          { label: "leave it unmanaged (stop asking)", value: "leave" },
         ],
       });
       if (action === "delete") {
@@ -40,7 +40,7 @@ export const command = defineCommand({
           deletions.set(g.harness, ids);
         }
       } else {
-        markUnmanaged(group.map((g) => ({ harness: g.harness, id })));
+        markMcpUnmanaged(group.map((g) => ({ harness: g.harness, id })));
       }
     }
 
@@ -113,7 +113,11 @@ export const command = defineCommand({
         r.reporter.success(`deleted ${entry} from ${group.map((g) => g.harness).join(", ")}`);
         continue;
       }
-      if (action !== "adopt") continue;
+      if (action === "leave") {
+        markLinkUnmanaged(group);
+        r.reporter.success(`left ${entry} unmanaged in ${group.map((g) => g.harness).join(", ")}`);
+        continue;
+      }
       if (common) {
         moveTree(group[0].dest, path.join(REPO, "common", format, entry)); // keep one; the link pass replaces the copies
         for (const g of group.slice(1)) fs.rmSync(g.dest, { recursive: true, force: true });

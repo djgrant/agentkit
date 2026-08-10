@@ -28,6 +28,10 @@ to own a single hook event each (keeping third-party installers from planting
 hooks there) while the live files keep their machine-local and secret-bearing
 keys out of git.
 
+When `pok sync` leaves a self-installed entry alone, it records that decision in
+`common/unmanaged.json` so later sync and drift runs do not ask again. MCP
+exceptions are similarly recorded under `unmanaged` in `common/mcp/servers.json`.
+
 ## Layout
 
 - [`common`](common): skills and mcp shared across harnesses
