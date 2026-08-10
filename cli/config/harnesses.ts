@@ -14,7 +14,7 @@ export const HARNESSES: Record<string, Harness> = {
   opencode: { base: "~/.config/opencode", formats: { skill: "skill", command: "command" }, files: ["opencode.json", "tui.json"] },
   amp: { base: "~/.config/amp", formats: { skill: "skills", plugin: "plugins" } }, // plugin dir scanned so self-installed plugins surface as unmanaged
   droid: { base: "~/.factory", formats: { skill: "skills" } },
-  pi: { base: "~/.pi/agent", formats: { skill: "skills", command: "prompts" } },
+  pi: { base: "~/.pi/agent", formats: { command: "prompts" } }, // pi discovers shared skills directly from ~/.agents/skills
   herdr: { base: "~/.config/herdr", formats: {}, files: ["config.toml"] }, // not an agent harness, but same config-sync model
 
 };
