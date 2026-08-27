@@ -3,6 +3,7 @@
   "servers": {
     "context7": {
       "transport": "stdio",
+      "enabled": false,
       "command": "npx",
       "args": [
         "-y",
@@ -11,8 +12,14 @@
         "${CONTEXT7_API_KEY}"
       ]
     },
+    "icepanel": {
+      "transport": "http",
+      "url": "https://mcp.icepanel.io/mcp",
+      "enabled": false
+    },
     "playwright": {
       "transport": "stdio",
+      "enabled": false,
       "command": "npx",
       "args": [
         "@playwright/mcp@latest",
