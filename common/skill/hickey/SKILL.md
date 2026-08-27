@@ -8,14 +8,15 @@ $max-rounds = $max-rounds ?? 10
 $round = 0
 
 WHILE $round < $max-rounds
-  SPAWN $explorer
-  WITH #explorer-instructions($target)
+  [$canidates, $satisfied] = SPAWN $explorer WITH #explorer-instructions($target)
 
-  IF $explorer SATISFIED THEN
+  IF $satisfied THEN
     BREAK;
   END
 
-  $batches = Array<set of tasks from $explorers that can be efficiently completed by a single agent>
+  $selected_candidates = YIELD $canidates TO user
+
+  $batches = Array<set of $selected_canidates that can be efficiently completed by a single agent>
 
   FOR $batch of $batches
     SPAWN $worker 
