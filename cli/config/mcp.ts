@@ -73,6 +73,14 @@ const guardHttpSecrets = (s: Server) => {
   }
 };
 
+/** Render one declaration into the shared project-level .mcp.json shape. */
+export const renderLocalServer = (server: Server): Record<string, unknown> => {
+  if (server.transport === "http") {
+    return compact({ url: server.url, headers: server.headers });
+  }
+  return launcher(server);
+};
+
 export const DIALECTS: Record<string, Dialect> = {
   claude: {
     store: jsonFileStore("~/.claude.json", "mcpServers"),
@@ -136,6 +144,14 @@ export const DIALECTS: Record<string, Dialect> = {
     render: (s) => {
       if (s.transport === "http") return compact({ type: "http", url: s.url, headers: s.headers });
       return { type: "stdio", ...launcher(s) };
+    },
+  },
+  pi: {
+    store: jsonFileStore("~/.pi/agent/mcp.json", "mcpServers"),
+    secrets: "passthrough", // pi-mcp-adapter expands ${NAME} itself
+    render: (s) => {
+      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
+      return launcher(s);
     },
   },
 };

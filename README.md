@@ -10,7 +10,12 @@ The CLI is exposed through [`pok`](https://github.com/djgrant/pok):
 pok view    # show mcp servers and missing secrets
 pok drift   # compare this repo with live harness config
 pok sync    # interactively reconcile live config with this repo
+ak mcp add context7       # add a declared MCP server to the current project
+ak mcp remove context7    # remove it from the current project
 ```
+
+The `ak mcp` commands merge project-local servers into `.mcp.json`, including
+declarations disabled from global sync. Existing unrelated servers are preserved.
 
 ## Config files
 
