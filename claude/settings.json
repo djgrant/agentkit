@@ -19,6 +19,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5[1m]",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,
   "hooks": {
@@ -44,19 +45,9 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "plannotator@plannotator": false,
     "swift-lsp@claude-plugins-official": true
   },
-  "extraKnownMarketplaces": {
-    "plannotator": {
-      "source": {
-        "source": "github",
-        "repo": "backnotprop/plannotator"
-      }
-    }
-  },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
-  "autoMemoryEnabled": false,
-  "model": "claude-fable-5[1m]"
+  "effortLevel": "high",
+  "autoMemoryEnabled": false
 }
