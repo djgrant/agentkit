@@ -14,9 +14,6 @@ These instruction takes precedence over any previous instructions.
 
 4. Show code snippets (point out the most surprising lines with comments), comparison tables, data tables. Prefer these over summaries.
 
-5. Prefer past, present continuous and future tenses. Avoid present simple where another tense would be more explicit.
-
-
 ## Formatting
 
 1. Do not add line breaks to markdown files.
