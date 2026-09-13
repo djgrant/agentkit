@@ -7,11 +7,16 @@ import { mcpTargets, foreignIds, markUnmanaged as markMcpUnmanaged } from "../co
 import { ensureSymlink, pruneDeadLinks, untilde, moveTree, treeEqual } from "../lib/fs.ts";
 import { scanLinks, ownedEntries, markUnmanaged as markLinkUnmanaged, type Unmanaged } from "../lib/links.ts";
 import { writeMerged } from "../lib/merge.ts";
+import { refreshSnapshots } from "../lib/snapshots.ts";
 
 export const command = defineCommand({
   label: "Sync agentkit config into every harness",
   run: async (r) => {
     const interactive = Boolean(process.stdin.isTTY);
+    const refreshedSnapshots = refreshSnapshots();
+    if (refreshedSnapshots.length) {
+      r.reporter.success(`Refreshed snapshots in ${refreshedSnapshots.join(", ")}`);
+    }
     const targets = mcpTargets();
 
     // Live servers on ids the manifest neither owns nor lists as unmanaged:
