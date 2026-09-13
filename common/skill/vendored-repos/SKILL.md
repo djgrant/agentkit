@@ -1,25 +1,30 @@
 ---
 name: vendored-repos
-description: How to read and create vendored repos – used for agents to find idiomatic examples, real usage, and internals before falling back to web search or guessing.
+description: Use to a) create new vendored repos, b) read the repo of $snap:vendored_repos(alchemy, browsermcp, companies-house-filing, effect, effect-v4, foldkit, gnucash-ixbrl, ixbrl-reporter, ixbrl-reporter-jsonnet, kapture, notation, opencode, opentui, playwright, playwriter, sst) instead of web search or peering into node_modules.
 ---
 
-# Vendored Repositories
+# Vendored Repos
 
-External library source is vendored locally in a shared, read-only store:
-`~/Repos/vendors/<name>`. Grep and read it for idiomatic examples, real API
-usage, and internals — prefer it over web search or guessing.
+Commonly-used libraries have their source code vendored in `~/Repos/vendors/<name>`.
 
-Never import from it (application code uses the normal package dependencies) and
-never edit it. See `~/Repos/vendors/README.md` for the current inventory.
+This gives agents access to the best documentation – the up-to-date source of truth.
 
-## Add a repo
+## Read vendored repos
 
-`~/Repos/vendors` is a plain directory. Shallow-clone the upstream, then drop its
-git history so it stays plain read-only files:
+First git pull the repo you want to inspect so you are observing the latest source files.
+
+Grep and read the repo for examples, tests, usage etc.
+
+Obviously, never import code from a vendored repo.
+
+## Add a vendored repo
 
 ```bash
 git clone --depth 1 --branch <branch> <repo-url> ~/Repos/vendors/<name>
-rm -rf ~/Repos/vendors/<name>/.git
 ```
 
-Then add a row to `~/Repos/vendors/README.md` (directory, upstream URL, branch).
+Once the repo is added, run:
+
+```bash
+cd ~/Repos/operations/agentkit && pok sync
+```
