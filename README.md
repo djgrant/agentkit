@@ -10,6 +10,7 @@ The CLI is exposed through [`pok`](https://github.com/djgrant/pok):
 pok view    # show mcp servers and missing secrets
 pok drift   # compare this repo with live harness config
 pok sync    # interactively reconcile live config with this repo
+pok skills add vercel-labs/agent-skills # install skills into agentkit
 ak mcp add context7       # add a declared MCP server to the current project
 ak mcp remove context7    # remove it from the current project
 ```
