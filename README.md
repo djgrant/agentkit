@@ -44,6 +44,7 @@ exceptions are similarly recorded under `unmanaged` in `common/mcp/servers.json`
 - [`claude`](claude): claude-specific setup
 - [`opencode`](opencode): open-code specific setup
 - [`pi/extensions`](pi/extensions): user-level Pi extensions, symlinked into `~/.pi/agent/extensions` by `pok sync`
+  - `/fixup <instructions>` revises the last completed assistant message and installs the revision on a new active branch; the original remains available in Pi's session tree
 - etc.
 
 
