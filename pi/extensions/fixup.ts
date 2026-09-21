@@ -304,6 +304,11 @@ export default function fixupExtension(pi: ExtensionAPI) {
 				// newly generated response as its sibling on the active branch.
 				const navigated = await ctx.navigateTree(target.parentId, { summarize: false });
 				if (navigated.cancelled) return;
+				if (branchPoint.type === "message" && branchPoint.message.role === "user") {
+					// Navigating to a user entry restores its text into the composer. Fixup
+					// immediately replays that prompt itself, so do not leave a duplicate draft.
+					ctx.ui.setEditorText("");
+				}
 
 				const switched = await pi.setModel(replayModel);
 				if (!switched) {
