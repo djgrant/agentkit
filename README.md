@@ -43,6 +43,7 @@ exceptions are similarly recorded under `unmanaged` in `common/mcp/servers.json`
 - [`common`](common): skills and mcp shared across harnesses
 - [`claude`](claude): claude-specific setup
 - [`opencode`](opencode): open-code specific setup
+- [`pi/extensions`](pi/extensions): user-level Pi extensions, symlinked into `~/.pi/agent/extensions` by `pok sync`
 - etc.
 
 

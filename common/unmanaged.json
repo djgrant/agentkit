@@ -102,6 +102,12 @@
         "workers-best-practices",
         "wrangler"
       ]
+    },
+    "pi": {
+      "extensions": [
+        "herdr-agent-state.ts",
+        "hmux"
+      ]
     }
   }
 }
