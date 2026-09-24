@@ -39,6 +39,22 @@
       "model": "{env:OPENCODE_CREATIVE_MODEL}"
     }
   },
-  "mcp": {},
+  "mcp": {
+    "parallel-search": {
+      "type": "local",
+      "command": [
+        "bun",
+        "/Users/coder/Repos/operations/agentkit/cli/scripts/run-mcp.ts",
+        "{}",
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://search.parallel.ai/mcp",
+        "--header",
+        "Authorization: Bearer ${PARALLEL_API_KEY}"
+      ],
+      "enabled": true
+    }
+  },
   "$schema": "https://opencode.ai/config.json"
 }
