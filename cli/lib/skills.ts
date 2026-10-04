@@ -53,11 +53,28 @@ export function parseSkillLocation(location: string): SkillSource {
 
 export async function cloneSkillSource(source: SkillSource): Promise<string> {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agentkit-skill-"));
-  const args = ["git", "clone", "--depth", "1"];
+  const args = [
+    "git",
+    "-c",
+    "filter.lfs.smudge=",
+    "-c",
+    "filter.lfs.clean=",
+    "-c",
+    "filter.lfs.process=",
+    "-c",
+    "filter.lfs.required=false",
+    "clone",
+    "--depth",
+    "1",
+  ];
   if (source.ref) args.push("--branch", source.ref);
   args.push("--", source.url, dir);
 
-  const proc = Bun.spawn(args, { stdout: "ignore", stderr: "pipe" });
+  const proc = Bun.spawn(args, {
+    stdout: "ignore",
+    stderr: "pipe",
+    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: "1" },
+  });
   const timeout = setTimeout(() => proc.kill(), 60_000);
   const exitCode = await proc.exited;
   clearTimeout(timeout);
