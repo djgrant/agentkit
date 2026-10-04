@@ -24,6 +24,7 @@ Read all three before you start:
 4. Plan the length from the script, and tell the user the expected length when you show the script.
 5. Design one shared stage before frames. If dispatching workers, give the exact coordinates for the recurring objects – for example the process box, the provider panel, the state card and the log strip. Each event must happen to an object on that stage.
 6. Do not add sound effects. Voice only, unless the user asks for them.
+7. Once done, save an MP4 and script to .explainers/{filepath}.{mp4,md}
 
 ## Voice: ElevenLabs
 
