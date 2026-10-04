@@ -5,7 +5,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { REPO, UNMANAGED_FILE } from "../config/paths.ts";
+import { REPO, UNMANAGED_FILE, VENDOR } from "../config/paths.ts";
 import { HARNESSES, type Harness } from "../config/harnesses.ts";
 import { ls, readJson, untilde, writeJson } from "./fs.ts";
 
@@ -46,10 +46,11 @@ export function markUnmanaged(entries: Unmanaged[]) {
 /** Entries agentkit never treats as a linkable skill: dotfiles, the manifest's own SKILL.md, and internal sync dirs. */
 const skippable = (entry: string) => entry.startsWith(".") || entry === "SKILL.md" || entry === "synced";
 
-/** The entries the repo would link for a harness/format: common first, harness wins. */
+/** The entries the repo would link for a harness/format: common first, harness wins; authored beats vendored. */
 export function ownedEntries(name: string, format: string): Map<string, string> {
   const owned = new Map<string, string>();
-  for (const dir of [path.join(REPO, "common", format), path.join(REPO, name, format)]) {
+  const dirs = ["common", name].flatMap((scope) => [path.join(VENDOR, scope, format), path.join(REPO, scope, format)]);
+  for (const dir of dirs) {
     for (const entry of ls(dir)) {
       if (skippable(entry)) continue;
       owned.set(entry, path.join(dir, entry));

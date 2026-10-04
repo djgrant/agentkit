@@ -22,6 +22,9 @@ common/mcp/secrets.env
 **/.agentkit-mcp.json
 **/*.agentkit.bak
 
+# Third-party skills installed by `pok skills add`
+/vendor/
+
 # Tooling caches
 .ruff_cache/
 __pycache__/

@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { REPO } from "../config/paths.ts";
+import { REPO, VENDOR } from "../config/paths.ts";
 
 export interface SkillSource {
   url: string;
@@ -140,18 +140,21 @@ export function installSkills(skills: DiscoveredSkill[], targets: string[]): str
   const destinations = skills.flatMap((skill) =>
     targets.map((target) => ({
       skill,
-      destination: path.join(REPO, target, "skill", sanitizeName(skill.name)),
+      destination: path.join(VENDOR, target, "skill", sanitizeName(skill.name)),
+      authored: path.join(REPO, target, "skill", sanitizeName(skill.name)),
     })),
   );
   const unique = new Set(destinations.map(({ destination }) => destination));
   if (unique.size !== destinations.length) {
     throw new Error("Selected skills resolve to the same destination name");
   }
-  const existing = destinations.filter(({ destination }) => fs.existsSync(destination));
+  const existing = destinations.flatMap(({ destination, authored }) =>
+    [destination, authored].filter((p) => fs.existsSync(p)),
+  );
   if (existing.length) {
     throw new Error(
       `Refusing to overwrite existing skill${existing.length === 1 ? "" : "s"}: ${existing
-        .map(({ destination }) => path.relative(REPO, destination))
+        .map((p) => path.relative(REPO, p))
         .join(", ")}`,
     );
   }

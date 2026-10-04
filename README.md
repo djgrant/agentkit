@@ -10,7 +10,7 @@ The CLI is exposed through [`pok`](https://github.com/djgrant/pok):
 pok view    # show mcp servers and missing secrets
 pok drift   # compare this repo with live harness config
 pok sync    # interactively reconcile live config with this repo
-pok skills add vercel-labs/agent-skills # install skills into agentkit
+pok skills add vercel-labs/agent-skills # install skills into vendor/ (gitignored)
 ak mcp add context7       # add a declared MCP server to the current project
 ak mcp remove context7    # remove it from the current project
 ```
@@ -41,6 +41,7 @@ exceptions are similarly recorded under `unmanaged` in `common/mcp/servers.json`
 ## Layout
 
 - [`common`](common): skills and mcp shared across harnesses
+- `vendor`: third-party skills installed by `pok skills add`, same layout as the repo, not in version control. An authored skill with the same name wins
 - [`claude`](claude): claude-specific setup
 - [`opencode`](opencode): open-code specific setup
 - [`pi/extensions`](pi/extensions): user-level Pi extensions, symlinked into `~/.pi/agent/extensions` by `pok sync`
