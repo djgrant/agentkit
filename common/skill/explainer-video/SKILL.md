@@ -14,11 +14,12 @@ Read all three before you start:
 | This file | Method and tools |
 | [source-material.md](./source-material.md) | How to read the source document |
 | [prose.md](./prose.md) | How to write the narration, with bad and good examples |
+| [transcript.md](./prose.md) | An example transcript of an explainer video |
 
 ## Method
 
 1. Use the `/hyperframes` skill and then open its `/faceless-explainer`.
-2. Write the script before anything else. Show it to the user as plain text and get approval. A rejected script costs one message. A rejected video costs a full rebuild.
+2. Write the script before anything else. Show it to the user as plain text and get approval. A rejected script costs one message. A rejected video costs a full rebuild. You can adjust the script as you go along as the animation may feed back into the script.
 3. Default to using Eleven Lab's Eric voice. If the user asks for a different voice, generate the same passage of the real script (about 15 s) with 3–4 voices, and let the user listen.
 4. Plan the length from the script, and tell the user the expected length when you show the script.
 5. Design one shared stage before frames. If dispatching workers, give the exact coordinates for the recurring objects – for example the process box, the provider panel, the state card and the log strip. Each event must happen to an object on that stage.
