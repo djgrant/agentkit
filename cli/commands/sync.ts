@@ -26,16 +26,16 @@ export const command = defineCommand({
     const foreign = targets.flatMap((t) => foreignIds(t).map((id) => ({ harness: t.name, id })));
     for (const group of groupBy(foreign, (f) => f.id).values()) {
       const { id } = group[0];
-      const where = group.map((g) => g.harness).join(", ");
+      const where = group.map((g) => g.harness).join(" and ");
       if (!interactive) {
-        r.reporter.warn(`skipped ${id} (mcp) — live in ${where} but not in the manifest; run \`sync\` in a terminal to resolve`);
+        r.reporter.warn(`skipped ${id} (mcp): ${where} have it, agentkit does not; run \`sync\` in a terminal`);
         continue;
       }
       const action = await r.prompter.select<"delete" | "leave">({
-        message: `${id} (mcp) live in ${where} but not in the manifest`,
+        message: `${id} (mcp): ${where} have it, agentkit does not`,
         options: [
-          { label: "delete from the live config(s)", value: "delete" },
-          { label: "leave it unmanaged (stop asking)", value: "leave" },
+          { label: "delete it", value: "delete" },
+          { label: "leave it (stop asking)", value: "leave" },
         ],
       });
       if (action === "delete") {
@@ -80,37 +80,51 @@ export const command = defineCommand({
     // owned entry, even when several harnesses are blocked on the same repo source.
     for (const states of groupBy(managed.filter((m) => m.status === "blocked"), (m) => m.src).values()) {
       const { entry, format, src } = states[0];
-      if (!interactive) {
-        r.reporter.warn(`skipped ${format}/${entry} — blocked in ${states.map((s) => s.harness).join(", ")}; run \`sync\` in a terminal to resolve`);
+      if (states.every((s) => treeEqual(s.dest, src))) {
+        for (const s of states) overwrite.add(s.dest); // same content: just restore the link
         continue;
       }
-      const side = await r.prompter.select<"left" | "right">({
-        message: `${format}/${entry}: real dir where the repo owns a link (${states.map((s) => s.harness).join(", ")})`,
+      if (!interactive) {
+        r.reporter.warn(`skipped ${entry}: ${states.map((s) => s.harness).join(" and ")} have a different version from agentkit; run \`sync\` in a terminal`);
+        continue;
+      }
+      const where = states.map((s) => s.harness).join(" and ");
+      const rel = path.relative(REPO, src);
+      const action = await r.prompter.select<"agentkit" | "installed" | "delete">({
+        message: `${entry}: ${where} have a different version from agentkit. Use:`,
         options: [
-          { label: "repo wins — overwrite the dir(s) with the link", value: "left" },
-          { label: "live wins — pull one copy into the repo, then link", value: "right" },
+          { label: "agentkit's version", value: "agentkit" },
+          { label: `the version in ${where}`, value: "installed" }, // moved into agentkit, then linked
+          { label: "neither (delete everywhere)", value: "delete" },
         ],
       });
-      if (side === "right") moveTree(states[0].dest, src); // first live copy becomes the source
-      for (const s of states) overwrite.add(s.dest); // remaining reals get replaced by the link
+      if (action === "delete") {
+        for (const s of states) fs.rmSync(s.dest, { recursive: true, force: true });
+        fs.rmSync(src, { recursive: true, force: true }); // links in other harnesses go dead and are pruned below
+        r.reporter.success(`deleted ${entry} from ${where} and ${rel}`);
+        continue;
+      }
+      if (action === "installed") moveTree(states[0].dest, src); // first live copy becomes the source
+      for (const s of states) overwrite.add(s.dest); // remaining folders get replaced by the link
     }
 
     // Self-installed skills on unowned names: leave them, or adopt into the repo.
     for (const group of groupByEntry(unmanaged).values()) {
       const { format, entry } = group[0];
+      const have = group.map((g) => g.harness).join(" and ");
       if (!interactive) {
-        r.reporter.warn(`skipped ${format}/${entry} — unmanaged in ${group.map((g) => g.harness).join(", ")}; run \`sync\` in a terminal to adopt`);
+        r.reporter.warn(`skipped ${entry} (${format}): ${have} have it, agentkit does not; run \`sync\` in a terminal`);
         continue;
       }
       // Identical copies across harnesses => one common skill; divergent copies stay per-harness.
       const common = group.length >= 2 && group.every((g) => treeEqual(g.dest, group[0].dest));
       const where = common ? `common/${format}/` : `each harness's own ${format}/`;
       const action = await r.prompter.select<"leave" | "adopt" | "delete">({
-        message: `${entry} (${format}) self-installed in ${group.map((g) => g.harness).join(", ")} — unmanaged`,
+        message: `${entry} (${format}): ${have} have it, agentkit does not`,
         options: [
-          { label: "leave it (not agentkit's)", value: "leave" },
-          { label: `adopt into ${where} then link`, value: "adopt" },
-          { label: "delete from every harness", value: "delete" },
+          { label: "leave it (stop asking)", value: "leave" },
+          { label: "add it to agentkit", value: "adopt" }, // to `where`, then linked
+          { label: "delete it", value: "delete" },
         ],
       });
       if (action === "delete") {
