@@ -43,8 +43,8 @@ export function markUnmanaged(entries: Unmanaged[]) {
   writeJson(UNMANAGED_FILE, manifest);
 }
 
-/** Entries agentkit never treats as a linkable skill: dotfiles and the manifest's own SKILL.md. */
-const skippable = (entry: string) => entry.startsWith(".") || entry === "SKILL.md";
+/** Entries agentkit never treats as a linkable skill: dotfiles, the manifest's own SKILL.md, and internal sync dirs. */
+const skippable = (entry: string) => entry.startsWith(".") || entry === "SKILL.md" || entry === "synced";
 
 /** The entries the repo would link for a harness/format: common first, harness wins. */
 export function ownedEntries(name: string, format: string): Map<string, string> {
