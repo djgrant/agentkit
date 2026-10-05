@@ -1,10 +1,16 @@
 # Narration prose
 
-These are some examples a real draft that the user rejected.
+At a high-level, write an engaging story that flows and is easy to follow along.
+
+Here are some tips to help you write for the human viewer.
 
 ## Put the listener inside the situation
 
-An abstract label makes the listener translate it back into the real thing. Describe the real thing directly, in the second person. When you introduce a made-up example, say that it is an example. When only some listeners are in the situation, name that group.
+Don't describe something in the abstract, describe the real thing directly. 
+
+When you introduce a made-up example, say that it is an example. 
+
+And when an element only applies to a certain group, name that group.
 
 | Bad | Good |
 |---|---|
@@ -27,7 +33,7 @@ If the RFC adds the thing, say "a new X". If the thing already exists, say "X, w
 
 ## Name things again
 
-Pronouns and ordinals lose track of the subject when more than one thing is in play. Repeat the noun.
+Replace nouns with a pronoun or ordinals judicously. It's ok to repeat the noun to make sure the viewer doesn't lose track of the subject which is in play. 
 
 | Bad | Good |
 |---|---|
@@ -36,7 +42,7 @@ Pronouns and ordinals lose track of the subject when more than one thing is in p
 
 ## Name who does what
 
-A vague agent hides the mechanism. This includes an operation used as the subject ("a read", "a check"): say which component does the operation.
+Be explicit about who is the actor/agent.
 
 | Bad | Good |
 |---|---|
@@ -44,18 +50,16 @@ A vague agent hides the mechanism. This includes an operation used as the subjec
 | "Every provider call … becomes a durable step, under a name that never changes." | "Each step has a key built from the resource and the operation, so a later run can find the same step again." |
 | "When a read finds a role with no state record..." | "The reconciler first reads the role from AWS. If AWS returns a role, the reconciler checks its tags." |
 
-## Explain; do not list mechanisms
+## Avoid slogans; explain progresively
 
-The first draft read like slides. Each line named a mechanism from the RFC, and the listener got no picture of what happens. A summary sentence that is correct but abstract ("X marks where Y goes, and Z decides what it is") and a slogan ("X always wins") have the same problem. Replace them with the concrete steps.
+What is important is that the user _gets_ the concept. Explain something in full detail loses the viewer; reducing something to a slogan or summary has no teaching value. Explain concepts brick by brick building until a mental model has been constructed. 
 
 | Bad | Good |
 |---|---|
-| "A pending provider operation becomes a durable delay. The process can exit, and a timer wakes the workflow later." | "And when AWS says the database is still starting, the reconciler writes a delay into the log, and the process can exit." |
-| "State writes commit with the step ledger, and check the store's instance and version." | (Cut. The viewer does not need it to follow the story.) |
-| "The fix: the schema marks where a name and ownership tags go, and the engine decides what they are." | "The fix starts in the schema. The role name field gets a new flag: physical name. This flag tells the engine: if the code gives no role name, make one." |
-| "A name that you set in code always wins." | "If your code sets a role name, the reconciler uses that name, but does not generate its own one." |
+| "The fix: the schema marks where a name and ownership tags go, and the engine decides what they are." | "The fix starts in the schema. A new flag, "physical name", is assinged to the role name field. This flag tells the engine: if a role name is no provided, generate one." |
+| "A name that you set in code always wins." | "If your code sets a role name, the reconciler will use that name instead of generating one of its own one." |
 
-## Give each event a cause
+## Lean into reductio ad absurdum 
 
 When the story needs something to go wrong, say how it goes wrong.
 
@@ -65,7 +69,7 @@ When the story needs something to go wrong, say how it goes wrong.
 
 ## Keep sentences short
 
-A listener cannot go back and read a sentence again. Break long noun phrases and stacked clauses into separate sentences.
+A listener cannot go back and read a sentence again. Break up long noun phrases and stacked clauses.
 
 | Bad | Good |
 |---|---|
@@ -73,20 +77,31 @@ A listener cannot go back and read a sentence again. Break long noun phrases and
 
 ## Write for the ear
 
-In text, syntax highlighting and code font show that a word is an identifier. In speech, the listener does not get this help, so an identifier can sound like a normal word. Describe what the identifier does.
+In text, syntax highlighting tells the reader that something is an identifier. In speech, we need to use verbal punctuation.
 
 | Bad | Good |
 |---|---|
 | "...uses alchemy's own name function and alchemy's tags." | "...uses alchemy's own function for creating resource names. It also adds the same tags that alchemy adds to its own resources." |
 
+## Use tense to separate what exists from what will exist
+
+Use the present tense for the status quo, and the future tense for what is being proposed. If the problem and the fix both use the present tense, the listener cannot tell which one you are talking about.
+
+| Bad | Good |
+|---|---|
+| "The role name field gets a new flag: physical name." | "The role name field will be given a new flag, called physical name." |
+
+## Substantiate callbacks
+
+When making a callback to a previous section, make sure to remind the user the substance of what you are referring to.
+
+
+| Bad | Good |
+|---|---|
+| "Now go back to problem 1." | "Let's return to problem 1 – that to change the path, the reconciler had to delete the old role before it created the new role. |
+
 ## Make tension explicit
 
 Make clear transitions from problem to solution, or from status quo to change, and ensure the user is aware which you are talking about.
 
-Use a range of explicit conjunctive words when the script is describing a tension. Also join each step in a chain of reasoning with a connective ("In that case, ...", "If ..., then ...", "So, ..."). Do not put the steps next to each other with no link.
-
-Lean into reductio ad absurdum if it helps make the point.
-
-## Land on a contrast
-
-Close with the before and after in plain words: "Before, a crash meant cleanup … Now, a crash is just a pause. Rerun the same execution, and the deploy finishes."
+Use a range of explicit conjunctive words to express tension or join steps within a causal chain.
