@@ -19,14 +19,15 @@ Read the following:
 ## Method
 
 1. Read the source.
-2. Write the script. Show it to the user with the expected length (about 150 words per minute) and get approval before you continue.
-3. Create a project for the video in ~/Movies/explainers, intialising it with `sh "$(ak where skill explainer-video)/scripts/new.sh" <videos-dir>/<name>`. Put the script in `SCRIPT.md`, one `## NN slug` section per frame.
-4. Write `stage.html`: the objects that most frames share, with exact coordinates.
-5. Write `frames/NN-slug.html` for each section: its own objects and one cue per event. The words are in `audio_meta.json`.
-6. Show the user a preview of the video without the voice.
-7. Make the voice: `npm run voice`.
-8. Build and check: `npm run build && npm run check`. Fix all errors and design warnings. Run the `review:` command that `build` prints, and check the contact sheet against the Design list in `kit/README.md`.
-9. Show the user the preview: `npm run preview`. After approval: `npm run publish -- <repo>`. This writes `<repo>/.explainers/<source>.{mp4,md}`.
+2. Write the script. Once you have a draft, check it against prose.md to make sure it is compliant with the writing rules. 
+3. Show the script to the user with the expected length (about 150 words per minute) and get approval before you continue. If the user asked for changes, present the updated script with the changed text underlined to they can easily find the changes.
+4. Create a project for the video in ~/Movies/explainers, intialising it with `sh "$(ak where skill explainer-video)/scripts/new.sh" <videos-dir>/<name>`. Put the script in `SCRIPT.md`, one `## NN slug` section per frame.
+5. Write `stage.html`: the objects that most frames share, with exact coordinates.
+6. Write `frames/NN-slug.html` for each section: its own objects and one cue per event. The words are in `audio_meta.json`.
+7. Show the user a preview of the video before generating the voice (as voice changes are expensive).
+8. Once confirmed, make the voice: `npm run voice`.
+9. Build and check: `npm run build && npm run check`. Fix all errors and design warnings. Run the `review:` command that `build` prints, and check the contact sheet against the Design list in `kit/README.md`.
+10. Show the user the preview: `npm run preview`. After approval: `npm run publish -- <repo>`. This writes `<repo>/.explainers/<source>.{mp4,md}`.
 
 ## Changes
 
