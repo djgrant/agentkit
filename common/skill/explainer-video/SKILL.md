@@ -22,7 +22,7 @@ Read:
 4. Make the voice: `npm run voice`.
 5. Write `stage.html`: the objects that most frames share, with exact coordinates.
 6. Write `frames/NN-slug.html` for each section: its own objects and one cue per event. The words are in `audio_meta.json`.
-7. Build and check: `npm run build && npm run check`. Fix all errors. Check one contact sheet: `npx hyperframes snapshot --at <one time per frame>`.
+7. Build and check: `npm run build && npm run check`. Fix all errors and design warnings. Run the `review:` command that `build` prints, and check the contact sheet against the Design list in `kit/README.md`.
 8. Show the user the preview: `npm run preview`. After approval: `npm run publish -- <repo>`. This writes `<repo>/.explainers/<source>.{mp4,md}`.
 
 ## Changes

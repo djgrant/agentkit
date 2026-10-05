@@ -7,11 +7,26 @@
 
 ## Layout
 
-- Canvas 1920×1080. Keep content between y 58 and y 872; captions use the area below.
-- Title: `.k-title` (top left), one `.k-word` per word.
-- Position objects with `left`, `top`, `width`, `height` in a `<style>` block.
+- Canvas 1920×1080, 40 px grid. Content goes between x 120 and x 1800, y 160 and y 840. The title sits above (`.k-title`, y 80, one `.k-word` per word). Captions use the area below y 880.
+- Boxes (`k-box`, `k-dash`) snap to the 40 px grid: `left`, `top`, `width`, `height`. Everything else snaps to 20 px; for text in a box, use a 20 or 40 px inset.
+- Columns between x 120 and x 1800:
+  - 2: width 800, x 120 / 920
+  - 3: width 480, x 120 / 720 / 1320
+  - 4: width 360, x 120 / 560 / 1000 / 1440
+- Boxes in a row share their top and height. Gaps in a row or column are equal.
+- Position with `left`, `top`, `width`, `height` in a `<style>` block, not inline.
 - Use classes, not ids. Prefix with `f03-` (frame) or `st-` (stage).
-- Lines and arrows: one `<svg class="k-svg" viewBox="0 0 1920 1080">`. A path you `draw` needs `pathLength="1"`.
+- Lines and arrows: one `<svg class="k-svg" viewBox="0 0 1920 1080">`. Arrows start and end on box edges, at the middle of the row they connect. A path you `draw` needs `pathLength="1"`.
+
+## Design
+
+- Hierarchy by size: title 58 px; object names `k-serif` 40 px; values `k-mono` 28 px; labels and tags are smaller. Content text is never below 28 px.
+- One diagram per frame, filling 40–60 % of the content area. No empty quarter, and no small cluster in a corner.
+- Text on screen is labels, values and short terms. The narration is in the captions; do not repeat its sentences.
+- Show a process as a diagram (objects, arrows, states), not as a row of text chips.
+- Each object belongs to a box or a column. If it does not line up with something, move it.
+
+`npm run build` warns about off-grid positions and small text. Fix all warnings.
 
 ## Classes
 

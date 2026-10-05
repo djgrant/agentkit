@@ -37,12 +37,34 @@ def norm(t):
     return re.sub(r"[^a-z0-9]+", "", t.lower())
 
 
+
+def design_warnings(name, html):
+    """Kit design rules that a script can check: grid snapping and text size."""
+    out = []
+    els = [set(c.split()) for c in re.findall(r'class="([^"]*)"', html)]
+    for sel, body in re.findall(r"([^{}<>]+)\{([^{}]*)\}", "".join(re.findall(r"<style>(.*?)</style>", html, re.S))):
+        cls = set(re.findall(r"\.([\w-]+)", sel))
+        if not cls or any(c.startswith("k-") for c in cls):
+            continue
+        used = set().union(*[e for e in els if e & cls]) if any(e & cls for e in els) else set()
+        box = bool(used & {"k-box", "k-dash"})
+        grid = 40 if box else 20
+        for prop, v in re.findall(r"(?<![\w-])(left|top|width|height|font-size)\s*:\s*(-?[\d.]+)px", body):
+            v = float(v)
+            if prop == "font-size":
+                if v < 28 and not used & {"k-label", "k-tag"}:
+                    out.append(f"{name}: {sel.strip()} font-size {v:g}px; content text is 28 px or more")
+            elif v % grid:
+                out.append(f"{name}: {sel.strip()} {prop} {v:g}px is not on the {grid} px grid" + (" (boxes snap to 40)" if box else ""))
+    return out
+
 starts, total = [], 0
 for v in voices:
     starts.append(total); total += cs(v["duration_s"])
 
 # frames
 os.makedirs("compositions/frames", exist_ok=True)
+warnings = design_warnings("stage.html", stage)
 missing = [f"frames/{frame_id(s)}.html" for s in sections if not os.path.exists(f"frames/{frame_id(s)}.html")]
 if missing:
     sys.exit("Missing frame sources: " + ", ".join(missing))
@@ -79,6 +101,7 @@ for s, v in zip(sections, voices):
 </template>
 """
     open(f"compositions/frames/{fid}.html", "w").write(out)
+    warnings += design_warnings(f"frames/{fid}.html", src)
 
 # captions: break after punctuation, after 3 words, or at a pause
 groups = []
@@ -144,3 +167,8 @@ index = f"""<!DOCTYPE html>
 """
 open("index.html", "w").write(index)
 print(f"{len(sections)} frames, {len(groups)} caption groups, {total / 100:.2f}s")
+for w in warnings:
+    print("design:", w)
+# review: each frame when its narration ends, so all its objects are on screen
+ends = [f"{(st + cs(v['words'][-1]['end'])) / 100:.2f}" for st, v in zip(starts, voices)]
+print("review: npx hyperframes snapshot --at " + ",".join(ends))
