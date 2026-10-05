@@ -85,6 +85,8 @@ Make clear transitions from problem to solution, or from status quo to change, a
 
 Use a range of explicit conjunctive words when the script is describing a tension. Also join each step in a chain of reasoning with a connective ("In that case, ...", "If ..., then ...", "So, ..."). Do not put the steps next to each other with no link.
 
+Lean into reductio ad absurdum if it helps make the point.
+
 ## Land on a contrast
 
 Close with the before and after in plain words: "Before, a crash meant cleanup … Now, a crash is just a pause. Rerun the same execution, and the deploy finishes."
