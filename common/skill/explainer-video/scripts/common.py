@@ -96,6 +96,22 @@ def number(words):
     return [{"id": f"w{j}", **w} for j, w in enumerate({"text": w["text"], "start": w["start"], "end": w["end"]} for w in words)]
 
 
+def silences(path, noise="-40dB", min_dur=0.1):
+    """[(start, end)] of the silent stretches in an audio file."""
+    err = subprocess.run(["ffmpeg", "-hide_banner", "-i", path, "-af", f"silencedetect=n={noise}:d={min_dur}", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    return [(float(a), float(b)) for a, b in re.findall(r"silence_start: ([\d.]+)\n.*?silence_end: ([\d.]+)", err, re.S)]
+
+
+def snap_cut(sil, lo, hi, fallback):
+    """The middle of the longest silence that overlaps lo..hi. Alignment times drift into pauses,
+    so a cut placed from them alone can land on the next word."""
+    found = [(min(b, hi) - max(a, lo), a, b) for a, b in sil if b > lo and a < hi]
+    if not found: return fallback
+    _, a, b = max(found)
+    return (a + b) / 2
+
+
 def ffmpeg(*args):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *args], check=True)
 
