@@ -7,7 +7,7 @@ description: Create a documentation site for a repo using @notation/docs, driven
 
 A docs site is a TanStack Start app on Cloudflare Workers, built with the `@notation/docs` Vite preset (source: `~/Repos/docs/packages/docs`). The site lives in `./docs` of the owning repo and is operated through `pok docs dev|build|deploy`, which the `docs` plugin from `pok-plugins` mounts on the repo's CLI.
 
-This skill ships a complete scaffold in `<skill-dir>/template/`. The workflow is: copy it, fill the placeholders, install, verify.
+This skill ships a complete scaffold in its `template/` directory. The workflow is: copy it, fill the placeholders, install, verify.
 
 Reference implementations, if you need a live example: `~/Repos/notation/pok/docs` and `~/Repos/notation/yieldstar/docs`. Framework contract: `~/Repos/docs/AGENTS.md`.
 
@@ -17,7 +17,7 @@ The repo has pok when `pok.config.ts` exists at the root and `@pokit/core` is a 
 
 ```sh
 pnpm add -D @pokit/core @pokit/terminal "pok-plugins@github:djgrant/pok-plugins"
-cp <skill-dir>/template/pok.config.ts .
+cp "$(ak where skill creating-docs)/template/pok.config.ts" .
 ```
 
 If the repo already has a `pok.config.ts`, only add `pok-plugins` and the `plugins: [docs({ name: "<repo-name>-docs" })]` entry from the template. If the global `pok` launcher is missing, install it with `bun add -g pokit`.
@@ -41,7 +41,7 @@ allowBuilds:
 ## Step 3: Scaffold ./docs
 
 ```sh
-cp -R <skill-dir>/template/docs ./docs
+cp -R "$(ak where skill creating-docs)/template/docs" ./docs
 ```
 
 Then:

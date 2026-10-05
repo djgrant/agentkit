@@ -10,7 +10,7 @@ StackBlitz has **no server-side create API**. The only direct path is a form POS
 that form from a directory and opens it.
 
 ```bash
-node <skill-dir>/stackblitz.mjs [dir]   # defaults to cwd
+node "$(ak where skill stackblitz-repro)/stackblitz.mjs" [dir]   # defaults to cwd
 ```
 
 Build the repro locally first and confirm it actually reproduces. Only then publish —
