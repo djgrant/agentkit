@@ -83,6 +83,15 @@ In text, syntax highlighting tells the reader that something is an identifier. I
 |---|---|
 | "...uses alchemy's own name function and alchemy's tags." | "...uses alchemy's own function for creating resource names. It also adds the same tags that alchemy adds to its own resources." |
 
+## Say the role, show the name
+
+Long identifiers are hard to follow when spoken. Say what the thing is, and put its name in a footnote. The frame shows the name when the voice gets to the marker. Spell out the name the first time only if the name itself is the subject; if its structure is the point, say its parts.
+
+| Bad | Good |
+|---|---|
+| "So the role name will be something like prod-orders-api-role-7f3a." | "So the role name[^1] will start with the deployment name, then the resource ID, then part of the instance ID." `[^1]: prod-orders-api-role-7f3a` |
+| "...a new role name: for example prod-orders-api-role-9b04." | "...a new role name[^2]." `[^2]: prod-orders-api-role-9b04` |
+
 ## Use tense to separate what exists from what will exist
 
 Use the present tense for the status quo, and the future tense for what is being proposed. If the problem and the fix both use the present tense, the listener cannot tell which one you are talking about.

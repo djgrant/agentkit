@@ -7,8 +7,13 @@ GAP_AFTER = 1.0       # silence after each section
 GAP_AFTER_LAST = 2.0  # silence after the last section
 
 
+NOTE = re.compile(r"\[\^([\w-]+)\]")
+
+
 def read_script(path="SCRIPT.md"):
-    """Return (meta, sections). meta: front matter dict. sections: [{n, slug, text}]."""
+    """Return (meta, sections). meta: front matter dict, plus meta["notes"] = {id: text}.
+    sections: [{n, slug, text, source, notes}]. text is what the voice says (no footnote markers);
+    source keeps the markers; notes is [[id, word index]], the word that each marker follows."""
     src = open(path).read()
     meta = {}
     fm = re.match(r"^---\n(.*?)\n---\n", src, re.S)
@@ -18,15 +23,33 @@ def read_script(path="SCRIPT.md"):
                 k, v = line.split(":", 1)
                 meta[k.strip()] = v.strip()
         src = src[fm.end():]
-    sections = []
+    # footnote definitions can be on any line: "[^id]: text"
+    defs = {}
+    for m in re.finditer(r"^\[\^([\w-]+)\]:[ \t]*(.+)$", src, re.M):
+        if m.group(1) in defs: sys.exit(f"SCRIPT.md: footnote [^{m.group(1)}] is defined twice")
+        defs[m.group(1)] = m.group(2).strip()
+    src = re.sub(r"^\[\^[\w-]+\]:.*\n?", "", src, flags=re.M)
+    sections, used = [], set()
     for m in re.finditer(r"^## (\d+) (\S+)\s*\n(.*?)(?=^## |\Z)", src, re.S | re.M):
-        text = " ".join(m.group(3).split())
-        sections.append({"n": int(m.group(1)), "slug": m.group(2), "text": text})
+        source = " ".join(m.group(3).split())
+        notes = []
+        for x in NOTE.finditer(source):
+            if x.group(1) not in defs: sys.exit(f"SCRIPT.md: footnote [^{x.group(1)}] has no definition")
+            before = NOTE.sub("", source[:x.start()]).split()
+            if not before: sys.exit(f"SCRIPT.md: footnote [^{x.group(1)}] must follow a word")
+            notes.append([x.group(1), len(before) - 1])
+            used.add(x.group(1))
+        text = " ".join(NOTE.sub("", source).split())
+        sections.append({"n": int(m.group(1)), "slug": m.group(2), "text": text, "source": source, "notes": notes})
     if not sections:
         sys.exit("SCRIPT.md has no sections. Use '## 01 slug' headings.")
     for i, s in enumerate(sections):
         if s["n"] != i + 1:
             sys.exit(f"SCRIPT.md: section {i + 1} is numbered {s['n']}")
+    unused = [d for d in defs if d not in used]
+    if unused:
+        sys.exit("SCRIPT.md: footnotes with no marker: " + ", ".join(unused))
+    meta["notes"] = defs
     return meta, sections
 
 

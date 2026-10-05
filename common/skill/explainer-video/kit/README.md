@@ -48,8 +48,19 @@ A cue is the time of a word in the frame's narration. Case and punctuation do no
 - `"path#2"`: second "path"
 - `"path+0.3"`, `"path#2-0.1"`: with an offset in seconds
 - `4.2`: seconds from the frame start
+- `"^1"`, `"^1#2"`, `"^1+0.3"`: the word that footnote marker `[^1]` follows (see Footnotes)
 
 An unknown cue throws an error that lists the words. `npm run check` shows it.
+
+## Footnotes
+
+A footnote in `SCRIPT.md` holds text that the voice does not say, for example a long identifier. The narration says "the role name[^1]"; the definition `[^1]: prod-orders-api-role-7f3a` can go on any line.
+
+- Show the text: `<span class="k-mono f07-name" data-note="1"></span>`. The kit fills it.
+- Time the move with the marker: `k.appear(".f07-name", "^1")`.
+- Footnote ids are unique in the script. A marker can refer to a footnote that another section defines.
+
+Adding or changing a footnote does not change the voice, so it needs only `npm run build`.
 
 ## Moves
 

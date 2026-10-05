@@ -6,15 +6,24 @@ var Kit = (function () {
 
   function norm(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, ""); }
 
-  function frame(id, words) {
+  function frame(id, words, notes) {
     var R = '[data-composition-id="' + id + '"] ';
     var tl = gsap.timeline({ paused: true });
+    notes = notes || { at: [], text: {} };
 
     // "path" = first "path"; "path#2" = second; "path+0.3" / "path#2-0.1" = offset in seconds; a number = seconds
+    // "^1" = the word that footnote marker [^1] follows; "^1#2", "^1+0.3" as above
     function at(cue) {
       if (typeof cue === "number") return cue;
       var m = /^(.+?)(?:#(\d+))?([+-][\d.]+)?$/.exec(String(cue).trim());
       var w = norm(m[1]), n = m[2] ? +m[2] : 1, off = m[3] ? +m[3] : 0, seen = 0;
+      if (m[1][0] === "^") {
+        var note = m[1].slice(1);
+        for (var j = 0; j < notes.at.length; j++) {
+          if (notes.at[j][0] === note && ++seen === n) return Math.max(0, notes.at[j][1] + off);
+        }
+        throw new Error(id + ': cue "' + cue + '" not found. Footnotes: ' + notes.at.map(function (x) { return "^" + x[0]; }).join(" "));
+      }
       for (var i = 0; i < words.length; i++) {
         if (words[i][0] === w && ++seen === n) return Math.max(0, words[i][1] + off);
       }
@@ -25,6 +34,13 @@ var Kit = (function () {
       if (!list.length) throw new Error(id + ': selector "' + sel + '" matches nothing');
       return Array.prototype.slice.call(list);
     }
+
+    // <span data-note="1"></span> gets the text of footnote [^1]
+    Array.prototype.forEach.call(document.querySelectorAll(R + "[data-note]"), function (el) {
+      var t = notes.text[el.getAttribute("data-note")];
+      if (t == null) throw new Error(id + ': data-note="' + el.getAttribute("data-note") + '" has no footnote');
+      el.textContent = t;
+    });
 
     var k = {
       tl: tl, at: at, els: els,
