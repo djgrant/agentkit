@@ -10,7 +10,7 @@
 - Canvas 1920×1080, 40 px grid. Content goes between x 120 and x 1800, y 160 and y 840. The title sits above (`.k-title`, y 80, one `.k-word` per word). Captions use the area below y 880.
 - Boxes (`k-box`, `k-dash`) snap to the 40 px grid: `left`, `top`, `width`, `height`. Everything else snaps to 20 px; for text in a box, use a 20 or 40 px inset.
 - Columns between x 120 and x 1800:
-  - 2: width 800, x 120 / 920
+  - 2: width 800, x 120 / 1000
   - 3: width 480, x 120 / 720 / 1320
   - 4: width 360, x 120 / 560 / 1000 / 1440
 - Boxes in a row share their top and height. Gaps in a row or column are equal.
