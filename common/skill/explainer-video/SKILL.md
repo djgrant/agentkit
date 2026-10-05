@@ -7,14 +7,8 @@ description: Make a narrated explainer video from a technical document.
 
 Make a narrated video from a technical document (RFC, design doc, README). The only other skill you need is `hyperframes-core`; load it before the first frame.
 
-## Writing the Script
-
-Read the following:
-
-- [writing/source-material.md](./writing/source-material.md): how to read the source
-- [writing/prose.md](./writing/prose.md): how to write the narration
-- [writing/examples.md](./writing/examples.md): example narrations
-- [kit/README.md](./kit/README.md): how to write the stage and frames
+See `writing/rules.md` for how draft the script.
+See `kit/README.md` for how to write the stage and frames.
 
 ## Method
 
