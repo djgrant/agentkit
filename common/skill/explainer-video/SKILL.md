@@ -13,8 +13,8 @@ See `kit/README.md` for how to write the stage and frames.
 ## Method
 
 1. Read the source.
-2. Write the script. Once you have a draft, check it against prose.md to make sure it is compliant with the writing rules. 
-3. Show the script to the user with the expected length (about 150 words per minute) and get approval before you continue. If the user asked for changes, present the updated script with the changed text highlighted to they can easily find the changes.
+2. Write the script. Under each section's narration, draft what the frame shows in a fenced block: ` ```ts ` (or another language) for code from the source, ` ```diagram ` for a rough sketch of objects, arrows and states. The voice skips fenced blocks. Once you have a draft, check it against prose.md to make sure it is compliant with the writing rules. 
+3. Show the script, with its code and diagram drafts, to the user with the expected length (about 150 words per minute) and get approval before you continue. If the user asked for changes, present the updated script with the changed text highlighted to they can easily find the changes.
 4. Create a project for the video in ~/Movies/explainers, intialising it with `sh "$(ak where skill explainer-video)/scripts/new.sh" <videos-dir>/<name>`. Put the script in `SCRIPT.md`, one `## NN slug` section per frame.
 5. Write `stage.html`: the objects that most frames share, with exact coordinates.
 6. Write `frames/NN-slug.html` for each section: its own objects and one cue per event. The words are in `audio_meta.json`.

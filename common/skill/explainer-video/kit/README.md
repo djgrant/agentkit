@@ -23,6 +23,7 @@
 - Hierarchy by size: title 58 px; object names `k-serif` 40 px; values `k-mono` 28 px; labels and tags are smaller. Content text is never below 28 px.
 - One diagram per frame, filling 40–60 % of the content area. No empty quarter, and no small cluster in a corner.
 - Text on screen is labels, values and short terms. The narration is in the captions; do not repeat its sentences.
+- Code is the exception: a `k-code` block, at most 8 lines, copied from the script's code block. Highlight the line the narration is about.
 - Show a process as a diagram (objects, arrows, states), not as a row of text chips.
 - Each object belongs to a box or a column. If it does not line up with something, move it.
 
@@ -33,6 +34,7 @@
 - `k-box`, `k-dash`: solid, dashed box
 - `k-label`: small uppercase label
 - `k-mono`: code, fields, values
+- `k-code`: code block, one `<span>` per line (40 px line height)
 - `k-serif`: object names
 - `k-tag`: filled tag (KEY, IMMUTABLE)
 - `k-chip`: bordered status row

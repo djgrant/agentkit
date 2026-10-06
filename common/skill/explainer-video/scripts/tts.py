@@ -19,7 +19,7 @@ text = "\n\n".join(s["text"] for s in sections)
 if recut:
     al = json.load(open("assets/voice/full.json"))
 else:
-    al = tts(text, voice, "assets/voice/full.mp3")
+    al = generate([s["text"] for s in sections], voice, "assets/voice/full.mp3", meta.get("model"))
     json.dump(al, open("assets/voice/full.json", "w"))
 assert "".join(al["characters"]) == text, "alignment text differs from request text"
 starts, ends = al["character_start_times_seconds"], al["character_end_times_seconds"]

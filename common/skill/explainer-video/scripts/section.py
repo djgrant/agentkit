@@ -39,7 +39,7 @@ tmp = tempfile.mktemp(suffix=".mp3")
 
 def gen(text, **ctx):
     """Generate text; return (alignment, a, b): the span of speech in the mp3."""
-    al = tts(text, voice, tmp, **ctx)
+    al = tts(text, voice, tmp, model=meta.get("model"), **ctx)
     a = max(0.0, al["character_start_times_seconds"][0] - 0.05)
     b = al["character_end_times_seconds"][-1] + 0.1
     return al, a, b

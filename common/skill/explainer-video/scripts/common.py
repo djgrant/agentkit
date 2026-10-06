@@ -8,12 +8,13 @@ GAP_AFTER_LAST = 2.0  # silence after the last section
 
 
 NOTE = re.compile(r"\[\^([\w-]+)\]")
+FENCE = re.compile(r"^```.*?^```[ \t]*$\n?", re.S | re.M)  # code and diagram drafts: shown, not said
 
 
 def read_script(path="SCRIPT.md"):
     """Return (meta, sections). meta: front matter dict, plus meta["notes"] = {id: text}.
     sections: [{n, slug, text, source, notes}]. text is what the voice says (no footnote markers);
-    source keeps the markers; notes is [[id, word index]], the word that each marker follows."""
+    fenced blocks are dropped; source keeps the markers; notes is [[id, word index]], the word that each marker follows."""
     src = open(path).read()
     meta = {}
     fm = re.match(r"^---\n(.*?)\n---\n", src, re.S)
@@ -23,6 +24,7 @@ def read_script(path="SCRIPT.md"):
                 k, v = line.split(":", 1)
                 meta[k.strip()] = v.strip()
         src = src[fm.end():]
+    src = FENCE.sub("", src)
     # footnote definitions can be on any line: "[^id]: text"
     defs = {}
     for m in re.finditer(r"^\[\^([\w-]+)\]:[ \t]*(.+)$", src, re.M):
@@ -57,10 +59,10 @@ def frame_id(s):
     return f"{s['n']:02d}-{s['slug']}"
 
 
-def tts(text, voice, out_mp3, previous_text=None, next_text=None):
-    """One ElevenLabs request. Writes the mp3 and returns the alignment."""
+def tts(text, voice, out_mp3, previous_text=None, next_text=None, model=None):
+    """One ElevenLabs request. Writes the mp3 and returns the alignment. model: SCRIPT.md front matter `model:`, else MODEL."""
     key = os.environ.get("ELEVENLABS_API_KEY") or sys.exit("ELEVENLABS_API_KEY is not set")
-    body = {"text": text, "model_id": MODEL}
+    body = {"text": text, "model_id": model or MODEL}
     if previous_text: body["previous_text"] = previous_text
     if next_text: body["next_text"] = next_text
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice}/with-timestamps?output_format=mp3_44100_128"
@@ -76,6 +78,40 @@ def tts(text, voice, out_mp3, previous_text=None, next_text=None):
     import base64
     open(out_mp3, "wb").write(base64.b64decode(res["audio_base64"]))
     return res["alignment"]
+
+
+MAX_CHARS = 4800  # ElevenLabs takes at most 5000 characters per request (eleven_v3)
+
+
+def generate(texts, voice, out_mp3, model=None):
+    """Say texts, joined by blank lines, into one mp3. Long scripts go in several requests of whole
+    sections; their audio is joined and their alignments are joined with the time offsets."""
+    chunks = [[]]
+    for t in texts:
+        if chunks[-1] and len("\n\n".join(chunks[-1] + [t])) > MAX_CHARS: chunks.append([])
+        chunks[-1].append(t)
+    if len(chunks) == 1:
+        return tts("\n\n".join(texts), voice, out_mp3, model=model)
+    al = {"characters": [], "character_start_times_seconds": [], "character_end_times_seconds": []}
+    parts, offset = [], 0.0
+    for i, c in enumerate(chunks):
+        part = f"{out_mp3}.part{i}.mp3"
+        a = tts("\n\n".join(c), voice, part, model=model)
+        if i:
+            al["characters"] += ["\n", "\n"]
+            al["character_start_times_seconds"] += [offset, offset]
+            al["character_end_times_seconds"] += [offset, offset]
+        al["characters"] += a["characters"]
+        al["character_start_times_seconds"] += [t + offset for t in a["character_start_times_seconds"]]
+        al["character_end_times_seconds"] += [t + offset for t in a["character_end_times_seconds"]]
+        offset += float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", part]))
+        parts.append(part)
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+        f.write("".join(f"file '{os.path.abspath(p)}'\n" for p in parts))
+    ffmpeg("-f", "concat", "-safe", "0", "-i", f.name, "-c:a", "libmp3lame", "-b:a", "128k", out_mp3)
+    os.unlink(f.name)
+    for p in parts: os.unlink(p)
+    return al
 
 
 def words_from(al, a, b, t0):

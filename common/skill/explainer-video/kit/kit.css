@@ -24,7 +24,7 @@
 .k-word { display: inline-block; margin-right: 0.24em; }
 
 /* objects: absolute by default; set left/top/width/height inline */
-.k-box, .k-dash, .k-label, .k-mono, .k-serif, .k-tag, .k-chip { position: absolute; box-sizing: border-box; }
+.k-box, .k-dash, .k-label, .k-mono, .k-serif, .k-tag, .k-chip, .k-code { position: absolute; box-sizing: border-box; }
 .k-box { border: 2px solid #1f2be0; }
 .k-dash { border: 2px dashed rgba(31, 43, 224, 0.45); }
 .k-label { font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: 0.18em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
@@ -32,6 +32,8 @@
 .k-serif { font-family: 'Newsreader', serif; font-weight: 400; font-size: 40px; line-height: 1; white-space: nowrap; }
 .k-tag { padding: 7px 10px 7px 12px; background: #1f2be0; color: #f0ebde; font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
 .k-chip { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px; border: 2px solid #1f2be0; background: #f0ebde; font-family: 'DM Mono', monospace; font-size: 28px; letter-spacing: 0.05em; white-space: nowrap; }
+.k-code { font-family: 'DM Mono', monospace; font-weight: 400; font-size: 28px; letter-spacing: 0.02em; line-height: 40px; white-space: pre; }
+.k-code > span { display: block; }  /* one span per line, so a move can target a line */
 .k-static { position: static; }
 .k-faint { opacity: 0.6; }
 
