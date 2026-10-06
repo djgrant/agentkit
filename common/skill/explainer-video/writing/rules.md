@@ -2,9 +2,11 @@
 
 At a high-level, write an engaging story that flows and is easy to follow along. Your job is to lead an ignorant viewer through clear logical chains to the _"inescapable conclusion"_. 
 
-## 1. Study the source material
+## 1. Study the source material; own the narrative
 
 Make sure you understand the underlying source material, check every example is realistic, and that claims check out.
+
+But do not rely on the narrative you find in the source material. Your job is to understand and then explain. The explanation must meet the standards in this doc. It is not enough to simply relay the source material.
 
 ## 2. Construct realistic examples 
 
@@ -58,15 +60,19 @@ In text, syntax highlighting tells the reader that something is an identifier. I
 
 Long identifiers are hard to follow when spoken. Say what the thing is, and put its name in a footnote.
 
-## 15. Use tense to separate what exists from what will exist
+## 15. Show the thing, then talk about it
+
+Draft the code or diagram with the sentence that needs it. If the RFC turns on the shape of an API, show the real code, and let the narration point at it ("the input has no path field") instead of reading it out.
+
+## 16. Use tense to separate what exists from what will exist
 
 Use the present tense for the status quo, and the future tense for what is being proposed. If the problem and the fix both use the present tense, the listener cannot tell which one you are talking about.
 
-## 16. Substantiate callbacks
+## 17. Substantiate callbacks
 
 When making a callback to a previous section, make sure to remind the user the substance of what you are referring back to.
 
-## 17. Build tension and resolution
+## 18. Build tension and resolution
 
 Make clear transitions from problem to solution, or from status quo to change, and ensure the user is aware which you are talking about.
 
