@@ -56,9 +56,9 @@ When the story needs something to go wrong, let it go really wrong.
 
 In text, syntax highlighting tells the reader that something is an identifier. In speech, we need to use verbal punctuation.
 
-## 14. Say the role, show the name
+## 14. Avoid long idenitifers
 
-Long identifiers are hard to follow when spoken. Say what the thing is, and put its name in a footnote.
+Long identifiers like IDs or code identifiers dominate the transcript. In the script, say what the thing is generally, and put its name in a footnote.
 
 ## 15. Show the thing, then talk about it
 
@@ -79,3 +79,7 @@ Make clear transitions from problem to solution, or from status quo to change, a
 Use a range of explicit conjunctive words to express tension or join steps within a causal chain.
 
 Once the tensions are unbearable, land on the resolution to those tensions.
+
+# 19. Signpost critical elements
+
+Any fact, statement, or conclusion on which the argument turns or relies on should be highlighted. Don't just say the thing. Say it, and then say that it is important and why.
