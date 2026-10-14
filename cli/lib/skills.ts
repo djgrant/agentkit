@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { HARNESSES } from "../config/harnesses.ts";
 import { REPO, VENDOR } from "../config/paths.ts";
 
 export interface SkillSource {
@@ -13,6 +14,37 @@ export interface DiscoveredSkill {
   name: string;
   description: string;
   dir: string;
+}
+
+export interface InstalledSkill {
+  name: string;
+  scope: string; // "common" or a harness name
+  origin: "authored" | "vendor";
+  dir: string;
+}
+
+/** Every skill dir in the repo and vendor/, in precedence order: authored beats vendored, common beats harness-specific. */
+export function installedSkills(): InstalledSkill[] {
+  const skills: InstalledSkill[] = [];
+  const scopes = ["common", ...Object.keys(HARNESSES)];
+  for (const [origin, root] of [["authored", REPO], ["vendor", VENDOR]] as const) {
+    for (const scope of scopes) {
+      const parent = path.join(root, scope, "skill");
+      if (!fs.existsSync(parent)) continue;
+      for (const entry of fs.readdirSync(parent, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+        const dir = path.join(parent, entry.name);
+        if (fs.existsSync(path.join(dir, "SKILL.md"))) skills.push({ name: entry.name, scope, origin, dir });
+      }
+    }
+  }
+  return skills;
+}
+
+/** The skill dir each name resolves to. */
+export function skillDirs(): Map<string, string> {
+  const dirs = new Map<string, string>();
+  for (const { name, dir } of installedSkills()) if (!dirs.has(name)) dirs.set(name, dir);
+  return dirs;
 }
 
 const SKIP_DIRS = new Set([".git", "node_modules", "dist", "build", "__pycache__"]);

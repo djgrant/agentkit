@@ -1,26 +1,6 @@
 import { defineCommand } from "@pokit/core";
-import * as fs from "node:fs";
-import * as path from "node:path";
 import { z } from "zod";
-import { HARNESSES } from "../config/harnesses.ts";
-import { REPO, VENDOR } from "../config/paths.ts";
-
-/** Authored skills win over vendored ones; common wins over harness-specific. */
-function skillDirs(): Map<string, string> {
-  const dirs = new Map<string, string>();
-  const targets = ["common", ...Object.keys(HARNESSES)];
-  for (const root of [REPO, VENDOR]) {
-    for (const target of targets) {
-      const parent = path.join(root, target, "skill");
-      if (!fs.existsSync(parent)) continue;
-      for (const entry of fs.readdirSync(parent, { withFileTypes: true })) {
-        const dir = path.join(parent, entry.name);
-        if (!dirs.has(entry.name) && fs.existsSync(path.join(dir, "SKILL.md"))) dirs.set(entry.name, dir);
-      }
-    }
-  }
-  return dirs;
-}
+import { skillDirs } from "../lib/skills.ts";
 
 export const command = defineCommand({
   label: "Print the directory of an agentkit skill",
