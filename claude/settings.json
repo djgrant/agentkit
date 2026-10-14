@@ -49,12 +49,17 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "autoMemoryEnabled": false,
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
   "pluginConfigs": {
     "cc-plugin-agents-md@builtin": {
       "options": {
         "instructionFiles": "claude-md-or-agents-md"
       }
     }
-  }
+  },
+  "autoMemoryEnabled": false
 }

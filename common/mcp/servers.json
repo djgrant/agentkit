@@ -3,6 +3,7 @@
   "servers": {
     "parallel-search": {
       "transport": "stdio",
+      "enabled": false,
       "command": "npx",
       "args": [
         "-y",
