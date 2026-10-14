@@ -33,7 +33,7 @@ export const command = defineCommand({
     const file = localMcpFile();
     const config = readLocalMcp(file);
     const current = localServers(config);
-    const desired = renderLocalServer(declaration);
+    const desired = renderLocalServer(context.server, declaration);
     const existing = current[context.server];
 
     if (existing !== undefined && Bun.deepEquals(existing, desired)) {

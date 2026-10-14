@@ -25,7 +25,7 @@ export type SecretStyle = "inline" | "passthrough" | (string & {});
 export interface Dialect {
   store: McpStore; // where the rendered servers persist
   secrets: SecretStyle;
-  render: (server: Server) => Record<string, unknown>; // canonical -> native shape
+  render: (server: Server, id: string) => Record<string, unknown>; // canonical -> native shape
 }
 
 /** Drop undefined fields so dialect renders stay terse. */
@@ -49,7 +49,7 @@ export function renderServers(
   const rendered = Object.fromEntries(
     Object.entries(servers)
       .filter(([, server]) => isEnabled(server) && (!server.targets || server.targets.includes(name)))
-      .map(([id, server]) => [id, dialect.render(server)]),
+      .map(([id, server]) => [id, dialect.render(server, id)]),
   );
   return resolveSecrets(rendered, dialect.secrets, env);
 }

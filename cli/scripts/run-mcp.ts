@@ -1,8 +1,13 @@
 import { SECRETS_FILE } from "../config/paths.ts";
+import { servers } from "../config/mcp.ts";
 import { loadEnv } from "../lib/env.ts";
 
-const [rawServerEnv, rawCommand, ...rawArgs] = Bun.argv.slice(2);
-if (!rawServerEnv || !rawCommand) throw new Error("Usage: run-mcp.ts <env-json> <command> [args...]");
+const [id] = Bun.argv.slice(2);
+if (!id) throw new Error("Usage: run-mcp.ts <server-id>");
+
+// Disabled servers still run here: `ak mcp add` can enable one per project.
+const server = servers()[id];
+if (!server?.command) throw new Error(`Unknown stdio MCP server: ${id}`);
 
 const available = loadEnv(SECRETS_FILE);
 const resolve = (value: string): string =>
@@ -13,12 +18,9 @@ const resolve = (value: string): string =>
   });
 
 const serverEnv = Object.fromEntries(
-  Object.entries(JSON.parse(rawServerEnv) as Record<string, string>).map(([name, value]) => [
-    name,
-    resolve(value),
-  ]),
+  Object.entries(server.env ?? {}).map(([name, value]) => [name, resolve(value)]),
 );
-const child = Bun.spawn([resolve(rawCommand), ...rawArgs.map(resolve)], {
+const child = Bun.spawn([resolve(server.command), ...(server.args ?? []).map(resolve)], {
   env: { ...process.env, ...serverEnv },
   stdin: "inherit",
   stdout: "inherit",
