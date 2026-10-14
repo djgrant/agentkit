@@ -1,17 +1,17 @@
 #!/bin/sh
 # Publish an RFC as a GitHub issue with its explainer video under the Abstract.
-# Usage: publish-rfc.sh <rfc-number> <owner/repo>   (run from the repo holding rfcs/)
+# Usage: publish-rfc.sh <rfc-number> <owner/repo> <video>   (run from the repo holding rfcs/)
 set -eu
 
 num=$(printf '%03d' "$(echo "$1" | sed 's/^0*//')")
 repo=$2
+video=$(cd "$(dirname "$3")" && pwd)/$(basename "$3")
 catalog=${LENS_CATALOG:-$HOME/Repos/operations/lenses-catalog/github}
 
 rfc=$(ls rfcs/"$num"-*.md 2>/dev/null | head -1)
 [ -n "$rfc" ] || { echo "no rfcs/$num-*.md in $PWD" >&2; exit 1; }
 base=$(basename "$rfc" .md)
-video=$PWD/.explainers/rfcs/$base.mp4
-[ -f "$video" ] || { echo "no explainer video at $video" >&2; exit 1; }
+[ -f "$video" ] || { echo "no video at $video" >&2; exit 1; }
 
 title="RFC $num: $(sed -n 's/^# //p' "$rfc" | head -1)"
 existing=$(gh issue list -R "$repo" --state all --search "\"RFC $num:\" in:title" --json number,title \

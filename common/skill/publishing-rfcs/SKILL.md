@@ -8,10 +8,10 @@ description: Publish an RFC from a repo's rfcs/ folder as a GitHub issue, with i
 From the root of the repo that holds `rfcs/` and `.explainers/rfcs/`, run:
 
 ```sh
-sh "$(ak where skill publishing-rfcs)/scripts/publish-rfc.sh" <rfc-number> <owner/repo>
+sh "$(ak where skill publishing-rfcs)/scripts/publish-rfc.sh" <rfc-number> <owner/repo> <video>
 ```
 
-`<owner/repo>` is the GitHub repo of the `origin` remote.
+`<owner/repo>` is the GitHub repo of the `origin` remote. `<video>` is the explainer to embed, usually `.explainers/rfcs/<rfc-file-name>.mp4`. If several videos match the RFC, ask the user which one to use.
 
 The script creates the issue from the RFC (minus frontmatter and title), compresses the video under GitHub's 10 MB limit, uploads it with the `github/issue-attachment` lens, and inserts it after the Abstract. It prints the issue URL. It refuses if an issue titled `RFC <number>:` already exists.
 
