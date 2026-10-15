@@ -1,8 +1,0 @@
-onboarding = false
-[ui]
-agent_panel_sort = "spaces"
-
-[[keys.command]]
-key = "prefix+i"
-type = "shell"
-command = "herdr pane current | jq -j --arg s \"$HERDR_SESSION\" '.result.pane.pane_id / \":\" | \"herdr://\\(.[0]):\\(.[1])@\\($s)\"' | pbcopy"

@@ -15,6 +15,6 @@ export const HARNESSES: Record<string, Harness> = {
   amp: { base: "~/.config/amp", formats: { skill: "skills", plugin: "plugins" } }, // plugin dir scanned so self-installed plugins surface as unmanaged
   droid: { base: "~/.factory", formats: { skill: "skills" } },
   pi: { base: "~/.pi/agent", formats: { command: "prompts", extensions: "extensions" } }, // pi discovers shared skills directly from ~/.agents/skills
-  herdr: { base: "~/.config/herdr", formats: {}, files: ["config.toml"] }, // not an agent harness, but same config-sync model
+  rex: { base: "~/.config/rex", formats: {}, files: ["init.lua"] }, // not an agent harness, but same config-sync model
 
 };

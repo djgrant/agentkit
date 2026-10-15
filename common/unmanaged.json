@@ -105,7 +105,6 @@
     },
     "pi": {
       "extensions": [
-        "herdr-agent-state.ts",
         "hmux"
       ]
     }
