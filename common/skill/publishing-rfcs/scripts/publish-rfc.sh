@@ -23,6 +23,20 @@ work=$(mktemp -d)
 awk 'NR==1 && /^---$/ {fm=1; next} fm && /^---$/ {fm=0; next} !fm' "$rfc" \
   | sed '/./,$!d' | sed '1{/^# /d;}' | sed '/./,$!d' > "$work/body.md"
 
+# The video's transcript, collapsed under the video, so agents working from the
+# issue can read it. Footnotes are inlined: GitHub would render them at the very
+# bottom of the issue.
+transcript=${video%.*}.md
+[ -f "$transcript" ] || transcript=.explainers/rfcs/$base.md
+: > "$work/transcript.md"
+if [ -f "$transcript" ]; then
+  { printf '<details>\n<summary>Video transcript</summary>\n\n'
+    sed '1{/^# /d;}' "$transcript" | sed '/^Narration for /d' \
+      | perl -0777 -pe 'my %n; s/^\[\^(\w+)\]:[ \t]*(.*)\n?/$n{$1}=$2; ""/gme; s/\[\^(\w+)\]/exists $n{$1} ? " ($n{$1})" : $&/ge; s/\s+\z/\n/' \
+      | sed '/./,$!d'
+    printf '\n</details>\n'; } > "$work/transcript.md"
+fi
+
 # GitHub caps free-plan video attachments at 10 MB: two-pass encode to ~9.5 MB at 720p.
 duration=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$video")
 vkbps=$(awk -v d="$duration" 'BEGIN { printf "%d", 9.5 * 8 * 1024 * 1024 / 1000 / d - 48 - 8 }')
@@ -40,9 +54,13 @@ result=$(lens call github/issue-attachment --catalog "$catalog" --allow-writes -
   --params "{\"owner\":\"${repo%/*}\",\"repo\":\"${repo#*/}\",\"issue\":$issue,\"path\":\"$work/$base.mp4\"}")
 asset=$(printf '%s' "$result" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);if(r.kind!=="value"){console.error(s);process.exit(1)}console.log(r.value.url)})')
 
-# The video goes after the Abstract, before the next section.
-awk -v asset="$asset" '
-  /^## / && seen && !done { print asset; print ""; print ""; done=1 }
+# The video and its transcript go after the Abstract, before the next section.
+awk -v asset="$asset" -v transcript="$work/transcript.md" '
+  /^## / && seen && !done {
+    print asset; print ""
+    while ((getline line < transcript) > 0) print line
+    print ""; done=1
+  }
   /^## Abstract/ { seen=1 }
   { print }
 ' "$work/body.md" > "$work/body-with-video.md"

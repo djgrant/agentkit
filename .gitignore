@@ -30,3 +30,6 @@ common/mcp/secrets.env
 __pycache__/
 
 .playwright*
+
+# github-agent credentials and Railway IDs (pok agent)
+github-agent/secrets.env
