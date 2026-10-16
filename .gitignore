@@ -31,5 +31,3 @@ __pycache__/
 
 .playwright*
 
-# github-agent credentials and Railway IDs (pok agent)
-github-agent/secrets.env
