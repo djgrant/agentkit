@@ -4,6 +4,10 @@
     "pr": ""
   },
   "permissions": {
+    "allow": [
+      "Bash(lens broker shutdown)",
+      "Bash(lens broker shutdown *)"
+    ],
     "deny": [
       "DesignSync",
       "NotebookEdit",
@@ -31,7 +35,8 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "figma@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
