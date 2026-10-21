@@ -1,53 +1,8 @@
 import * as path from "node:path";
-import { REPO, SERVERS_FILE, SECRETS_FILE } from "./paths.ts";
-import { readJson, writeJson } from "../lib/fs.ts";
-import { loadEnv } from "../lib/env.ts";
+import { REPO } from "./paths.ts";
 import { jsonFileStore, tomlTablesStore } from "../lib/store.ts";
-import { renderServers, compact, type Server, type Dialect } from "../lib/mcp.ts";
-
-export interface McpTarget {
-  name: string;
-  dialect: Dialect;
-  ownedIds: string[];
-  unmanagedIds: string[];
-  liveServers: () => Record<string, unknown>;
-  desiredServers: Record<string, unknown>;
-}
-
-export function mcpTargets(): McpTarget[] {
-  const manifest = readJson(SERVERS_FILE);
-  const source: Record<string, Server> = manifest.servers ?? {};
-  const unmanaged: Record<string, string[]> = manifest.unmanaged ?? {};
-  const env = loadEnv(SECRETS_FILE);
-  return Object.entries(DIALECTS).map(([name, dialect]) => ({
-    name,
-    dialect,
-    ownedIds: Object.keys(source),
-    unmanagedIds: unmanaged[name] ?? [],
-    liveServers: () => dialect.store.read(),
-    desiredServers: renderServers(source, name, dialect, env),
-  }));
-}
-
-export const servers = (): Record<string, Server> => readJson(SERVERS_FILE).servers ?? {};
-
-/** Live server ids the manifest neither owns nor lists as unmanaged. */
-export const foreignIds = (target: McpTarget): string[] =>
-  Object.keys(target.liveServers()).filter(
-    (id) => !target.ownedIds.includes(id) && !target.unmanagedIds.includes(id),
-  );
-
-/** Record ids in the manifest's `unmanaged` map so sync stops asking about them. */
-export function markUnmanaged(entries: { harness: string; id: string }[]) {
-  const manifest = readJson(SERVERS_FILE);
-  const unmanaged: Record<string, string[]> = manifest.unmanaged ?? {};
-  for (const { harness, id } of entries) {
-    const ids = (unmanaged[harness] ??= []);
-    if (!ids.includes(id)) ids.push(id);
-  }
-  manifest.unmanaged = unmanaged;
-  writeJson(SERVERS_FILE, manifest);
-}
+import { object } from "../utils/collections.ts";
+import type { Dialect, Server } from "../contracts/mcp.ts";
 
 /**
  * Every stdio server launches through run-mcp.ts, which looks the server up in
@@ -55,10 +10,7 @@ export function markUnmanaged(entries: { harness: string; id: string }[]) {
  * secrets file at spawn time. Configs and the launching shell never carry
  * secret values, or even the placeholders; secrets.env is the one source.
  */
-const launcher = (s: Server, id: string): { command: string; args: string[] } => {
-  if (!s.command) throw new Error("stdio MCP servers require a command");
-  return { command: "bun", args: [path.join(REPO, "cli/scripts/run-mcp.ts"), id] };
-};
+const launcher = (id: string) => ({ command: "bun", args: [path.join(REPO, "cli/scripts/run-mcp.ts"), id] });
 
 const guardHttpSecrets = (s: Server) => {
   if (JSON.stringify(s).includes("${")) {
@@ -67,37 +19,30 @@ const guardHttpSecrets = (s: Server) => {
 };
 
 /** Render one declaration into the shared project-level .mcp.json shape. */
-export const renderLocalServer = (id: string, server: Server): Record<string, unknown> => {
-  if (server.transport === "http") {
-    return compact({ url: server.url, headers: server.headers });
-  }
-  return launcher(server, id);
-};
+export const renderLocalServer = (s: Server, id: string) =>
+  s.transport === "http" ? object.compact({ url: s.url, headers: s.headers }) : launcher(id);
 
 export const DIALECTS: Record<string, Dialect> = {
   claude: {
     store: jsonFileStore("~/.claude.json", "mcpServers"),
     secrets: "passthrough",
     render: (s, id) => {
-      if (s.transport === "http") return compact({ type: "http", url: s.url, headers: s.headers });
-      return { type: "stdio", ...launcher(s, id) };
+      if (s.transport === "http") return object.compact({ type: "http", url: s.url, headers: s.headers });
+      return { type: "stdio", ...launcher(id) };
     },
   },
   cursor: {
     store: jsonFileStore("~/.cursor/mcp.json", "mcpServers"),
     secrets: "passthrough",
-    render: (s, id) => {
-      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
-      return launcher(s, id);
-    },
+    render: renderLocalServer,
   },
   opencode: {
     store: jsonFileStore(path.join(REPO, "opencode/opencode.json"), "mcp"),
     secrets: "passthrough",
     render: (s, id) => {
       if (s.transport === "http")
-        return compact({ type: "remote", url: s.url, headers: s.headers, enabled: true });
-      const l = launcher(s, id);
+        return object.compact({ type: "remote", url: s.url, headers: s.headers, enabled: true });
+      const l = launcher(id);
       return { type: "local", command: [l.command, ...l.args], enabled: true };
     },
   },
@@ -107,9 +52,9 @@ export const DIALECTS: Record<string, Dialect> = {
     render: (s, id) => {
       if (s.transport === "http") {
         guardHttpSecrets(s);
-        return compact({ url: s.url, http_headers: s.headers });
+        return object.compact({ url: s.url, http_headers: s.headers });
       }
-      return launcher(s, id);
+      return launcher(id);
     },
   },
   agy: {
@@ -118,33 +63,27 @@ export const DIALECTS: Record<string, Dialect> = {
     render: (s, id) => {
       if (s.transport === "http") {
         guardHttpSecrets(s); // Antigravity doesn't interpolate env itself
-        return compact({ serverUrl: s.url, headers: s.headers });
+        return object.compact({ serverUrl: s.url, headers: s.headers });
       }
-      return launcher(s, id);
+      return launcher(id);
     },
   },
   amp: {
     store: jsonFileStore("~/.config/amp/settings.json", "amp.mcpServers"),
     secrets: "passthrough", // Amp expands ${NAME} itself in HTTP headers
-    render: (s, id) => {
-      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
-      return launcher(s, id);
-    },
+    render: renderLocalServer,
   },
   droid: {
     store: jsonFileStore("~/.factory/mcp.json", "mcpServers"),
     secrets: "passthrough", // Droid expands ${NAME} itself in HTTP headers
     render: (s, id) => {
-      if (s.transport === "http") return compact({ type: "http", url: s.url, headers: s.headers });
-      return { type: "stdio", ...launcher(s, id) };
+      if (s.transport === "http") return object.compact({ type: "http", url: s.url, headers: s.headers });
+      return { type: "stdio", ...launcher(id) };
     },
   },
   pi: {
     store: jsonFileStore("~/.pi/agent/mcp.json", "mcpServers"),
     secrets: "passthrough", // pi-mcp-adapter expands ${NAME} itself
-    render: (s, id) => {
-      if (s.transport === "http") return compact({ url: s.url, headers: s.headers });
-      return launcher(s, id);
-    },
+    render: renderLocalServer,
   },
 };

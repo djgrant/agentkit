@@ -1,9 +1,4 @@
-export interface Harness {
-  base: string;
-  formats: Record<string, string>; // repo format dir -> harness's native subdir
-  files?: string[]; // config files linked straight into base
-  merges?: string[]; // config files the harness writes state into: merged, never linked (see lib/merge.ts)
-}
+import type { Harness } from "../contracts/harness.ts";
 
 export const HARNESSES: Record<string, Harness> = {
   claude: { base: "~/.claude", formats: { skill: "skills", command: "commands" }, files: ["settings.json", "CLAUDE.md"] },
@@ -16,5 +11,4 @@ export const HARNESSES: Record<string, Harness> = {
   droid: { base: "~/.factory", formats: { skill: "skills" } },
   pi: { base: "~/.pi/agent", formats: { command: "prompts", extensions: "extensions" } }, // pi discovers shared skills directly from ~/.agents/skills
   rex: { base: "~/.config/rex", formats: {}, files: ["init.lua"] }, // not an agent harness, but same config-sync model
-
 };

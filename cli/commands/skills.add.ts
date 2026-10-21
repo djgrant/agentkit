@@ -1,15 +1,9 @@
 import { defineCommand } from "@pokit/core";
-import * as fs from "node:fs";
 import { z } from "zod";
 import { HARNESSES } from "../config/harnesses.ts";
-import {
-  cloneSkillSource,
-  discoverSkills,
-  installSkills,
-  parseSkillFlag,
-  parseSkillLocation,
-  selectSkills,
-} from "../lib/skills.ts";
+import { discoverSkills, installSkills, parseSkillFlag, parseSkillLocation, selectSkills } from "../lib/skill-install.ts";
+import { tree } from "../utils/fs.ts";
+import { git } from "../utils/git.ts";
 
 const TARGETS = [
   { value: "common", label: "common", hint: "shared by every compatible harness" },
@@ -55,15 +49,15 @@ export const command = defineCommand({
     });
 
     const source = parseSkillLocation(context.location);
-    const tempDir = await cloneSkillSource(source);
+    const clone = await git.cloneToTemp(source.url, { ref: source.ref });
     try {
-      const discovered = discoverSkills(tempDir, source.subpath);
+      const discovered = discoverSkills(clone, source.subpath);
       if (!discovered.length) throw new Error(`No skills found at ${context.location}`);
-      const selected = selectSkills(discovered, requested);
-      const installed = installSkills(selected, targets);
-      for (const destination of installed) r.reporter.success(`Installed ${destination}`);
+      for (const destination of installSkills(selectSkills(discovered, requested), targets)) {
+        r.reporter.success(`Installed ${destination}`);
+      }
     } finally {
-      fs.rmSync(tempDir, { recursive: true, force: true });
+      tree.remove(clone);
     }
   },
 });

@@ -7,7 +7,7 @@ import {
   parseSkillFlag,
   parseSkillLocation,
   selectSkills,
-} from "./skills.ts";
+} from "./skill-install.ts";
 
 const tempDirs: string[] = [];
 afterEach(() => {

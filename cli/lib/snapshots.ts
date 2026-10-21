@@ -2,9 +2,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { HARNESSES } from "../config/harnesses.ts";
 import { REPO } from "../config/paths.ts";
-import { untilde } from "./fs.ts";
+import { paths } from "../utils/fs.ts";
 
-const VENDORS = untilde("~/Repos/vendors");
+const VENDORS = paths.untilde("~/Repos/vendors");
 
 /** Functions allowed in tracked snapshot expressions. Deliberately not eval-based. */
 const functions: Record<string, () => string> = {

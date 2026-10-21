@@ -6,6 +6,7 @@
   "dependencies": {
     "@pokit/core": "^0.6.0",
     "@pokit/terminal": "^0.6.0",
+    "smol-toml": "^1.9.1",
     "typescript": "^7.0.2",
     "zod": "^3.23.8"
   },

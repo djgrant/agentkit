@@ -1,27 +1,18 @@
-// Where a harness persists its MCP servers. A store only ever touches the
-// server ids it is told the repo owns — servers installed by the user or the
-// harness itself are left untouched.
+// MCP stores: the ways a harness persists its servers (see McpStore).
 
-import * as fs from "node:fs";
-import { readJson, writeJson, untilde } from "./fs.ts";
-import { dropSections, readText } from "./merge.ts";
-
-type Block = Record<string, unknown>;
-
-export interface McpStore {
-  read(): Block; // every server currently in the live config
-  write(desired: Block, ownedIds: string[]): void; // replace the owned ids with desired
-}
+import type { McpStore, ServerBlock } from "../contracts/mcp.ts";
+import { files } from "../utils/fs.ts";
+import { toml } from "../utils/toml.ts";
 
 /** A JSON config file with the servers under one top-level key. */
 export const jsonFileStore = (file: string, key: string): McpStore => ({
-  read: () => readJson(file)[key] ?? {},
+  read: () => files.readJson(file)[key] ?? {},
   write(desired, ownedIds) {
-    const config = readJson(file);
-    const block: Block = { ...(config[key] ?? {}) };
+    const config = files.readJson(file);
+    const block: ServerBlock = { ...(config[key] ?? {}) };
     for (const id of ownedIds) delete block[id];
     config[key] = { ...block, ...desired };
-    writeJson(file, config);
+    files.writeJson(file, config);
   },
 });
 
@@ -31,15 +22,15 @@ export const jsonFileStore = (file: string, key: string): McpStore => ({
  * comments, formatting, unrelated tables — is preserved byte-for-byte.
  */
 export const tomlTablesStore = (file: string, prefix: string): McpStore => ({
-  read: () => (Bun.TOML.parse(readText(file)) as Record<string, Block>)[prefix] ?? {},
+  read: () => (toml.parse(files.readText(file))[prefix] as ServerBlock | undefined) ?? {},
   write(desired, ownedIds) {
     const owned = new Set(ownedIds);
-    const kept = dropSections(readText(file), (section) => {
+    const kept = toml.dropSections(files.readText(file), (section) => {
       const [root, id] = splitKey(section);
       return root === prefix && owned.has(id);
     });
-    const next = [kept.trimEnd(), renderTables(prefix, desired)].filter(Boolean).join("\n\n") + "\n";
-    fs.writeFileSync(untilde(file), next);
+    const tables = Object.keys(desired).length ? toml.stringify({ [prefix]: desired }).trim() : "";
+    files.writeText(file, [kept.trimEnd(), tables].filter(Boolean).join("\n\n") + "\n");
   },
 });
 
@@ -48,27 +39,3 @@ const splitKey = (section: string): [string, string] => {
   const [root = "", id = ""] = section.split(".");
   return [root, id.replace(/^["']|["']$/g, "")];
 };
-
-function renderTables(prefix: string, block: Block): string {
-  return Object.entries(block)
-    .map(([id, fields]) =>
-      [
-        `[${prefix}.${tomlKey(id)}]`,
-        ...Object.entries(fields as Block).map(([key, value]) => `${tomlKey(key)} = ${tomlValue(value)}`),
-      ].join("\n"),
-    )
-    .join("\n\n");
-}
-
-const tomlKey = (key: string) => (/^[\w-]+$/.test(key) ? key : JSON.stringify(key));
-
-const tomlValue = (value: unknown): string =>
-  Array.isArray(value)
-    ? `[${value.map(tomlValue).join(", ")}]`
-    : value !== null && typeof value === "object"
-      ? `{ ${Object.entries(value)
-          .map(([key, inner]) => `${tomlKey(key)} = ${tomlValue(inner)}`)
-          .join(", ")} }`
-      : typeof value === "string"
-        ? JSON.stringify(value)
-        : String(value);

@@ -6,101 +6,70 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { REPO, UNMANAGED_FILE, VENDOR } from "../config/paths.ts";
-import { HARNESSES, type Harness } from "../config/harnesses.ts";
-import { ls, readJson, untilde, writeJson } from "./fs.ts";
-
-/** An owned entry and how its live destination compares to the repo source. */
-export interface LinkState {
-  harness: string;
-  format: string;
-  entry: string;
-  src: string; // repo source the dest should point at
-  dest: string; // live path in the harness
-  status: "ok" | "missing" | "stale" | "blocked";
-  liveTarget?: string; // present when status === "stale"
-}
-
-/** A live real dir on an unowned name — a self-installed skill we could adopt. */
-export interface Unmanaged {
-  harness: string;
-  format: string;
-  entry: string;
-  dest: string;
-}
-
-type UnmanagedLinks = Record<string, Record<string, string[]>>;
-
-/** Persist entries the user chose to leave alone so sync and drift stop surfacing them. */
-export function markUnmanaged(entries: Unmanaged[]) {
-  const manifest = readJson(UNMANAGED_FILE);
-  const links: UnmanagedLinks = manifest.links ?? {};
-  for (const { harness, format, entry } of entries) {
-    const names = ((links[harness] ??= {})[format] ??= []);
-    if (!names.includes(entry)) names.push(entry);
-    names.sort();
-  }
-  manifest.links = links;
-  writeJson(UNMANAGED_FILE, manifest);
-}
+import { HARNESSES } from "../config/harnesses.ts";
+import type { LinkState, Unmanaged, UnmanagedLinks } from "../contracts/links.ts";
+import { files, paths, symlink } from "../utils/fs.ts";
 
 /** Entries agentkit never treats as a linkable skill: dotfiles, the manifest's own SKILL.md, and internal sync dirs. */
 const skippable = (entry: string) => entry.startsWith(".") || entry === "SKILL.md" || entry === "synced";
 
-/** The entries the repo would link for a harness/format: common first, harness wins; authored beats vendored. */
-export function ownedEntries(name: string, format: string): Map<string, string> {
-  const owned = new Map<string, string>();
-  const dirs = ["common", name].flatMap((scope) => [path.join(VENDOR, scope, format), path.join(REPO, scope, format)]);
-  for (const dir of dirs) {
-    for (const entry of ls(dir)) {
-      if (skippable(entry)) continue;
-      owned.set(entry, path.join(dir, entry));
+export const links = {
+  /** The entries the repo would link for a harness/format: common first, harness wins; authored beats vendored. */
+  owned(harness: string, format: string) {
+    const owned = new Map<string, string>();
+    const dirs = ["common", harness].flatMap((scope) => [path.join(VENDOR, scope, format), path.join(REPO, scope, format)]);
+    for (const dir of dirs) {
+      for (const entry of files.ls(dir)) if (!skippable(entry)) owned.set(entry, path.join(dir, entry));
     }
-  }
-  return owned;
-}
+    return owned;
+  },
 
-const readlink = (p: string): string | null => {
-  try {
-    return fs.lstatSync(p).isSymbolicLink() ? fs.readlinkSync(p) : null;
-  } catch {
-    return null;
-  }
+  /** Walk every harness/format, classifying owned entries and spotting unmanaged ones. */
+  scan() {
+    const managed: LinkState[] = [];
+    const unmanaged: Unmanaged[] = [];
+    const ignored: UnmanagedLinks = files.readJson(UNMANAGED_FILE).links ?? {};
+
+    for (const [harness, { base, formats }] of Object.entries(HARNESSES)) {
+      for (const [format, native] of Object.entries(formats)) {
+        const dir = path.join(paths.untilde(base), native);
+        const owned = links.owned(harness, format);
+
+        for (const [entry, src] of owned) {
+          const dest = path.join(dir, entry);
+          const target = symlink.target(dest);
+          const status: LinkState["status"] =
+            target === null
+              ? fs.existsSync(dest)
+                ? "blocked" // a real file/dir sits on an owned name
+                : "missing"
+              : path.resolve(dir, target) === src // links may be relative
+                ? "ok"
+                : "stale";
+          managed.push({ harness, format, entry, src, dest, status, liveTarget: target ?? undefined });
+        }
+
+        for (const entry of files.ls(dir)) {
+          if (skippable(entry) || owned.has(entry) || ignored[harness]?.[format]?.includes(entry)) continue;
+          const dest = path.join(dir, entry);
+          if (symlink.is(dest)) continue; // another tool's link, none of our business
+          unmanaged.push({ harness, format, entry, dest });
+        }
+      }
+    }
+
+    return { managed, unmanaged };
+  },
+
+  /** Persist entries the user chose to leave alone so sync and drift stop surfacing them. */
+  markUnmanaged(entries: Unmanaged[]) {
+    const manifest = files.readJson(UNMANAGED_FILE);
+    const ignored: UnmanagedLinks = (manifest.links ??= {});
+    for (const { harness, format, entry } of entries) {
+      const names = ((ignored[harness] ??= {})[format] ??= []);
+      if (!names.includes(entry)) names.push(entry);
+      names.sort();
+    }
+    files.writeJson(UNMANAGED_FILE, manifest);
+  },
 };
-
-/** Walk every harness/format, classifying owned entries and spotting unmanaged ones. */
-export function scanLinks(): { managed: LinkState[]; unmanaged: Unmanaged[] } {
-  const managed: LinkState[] = [];
-  const unmanaged: Unmanaged[] = [];
-  const ignored: UnmanagedLinks = readJson(UNMANAGED_FILE).links ?? {};
-
-  for (const [name, harness] of Object.entries(HARNESSES) as [string, Harness][]) {
-    const base = untilde(harness.base);
-    for (const format of Object.keys(harness.formats)) {
-      const dir = path.join(base, harness.formats[format]);
-      const owned = ownedEntries(name, format);
-
-      for (const [entry, src] of owned) {
-        const dest = path.join(dir, entry);
-        const target = readlink(dest);
-        const resolved = target === null ? null : path.resolve(dir, target); // links may be relative
-        const status: LinkState["status"] = !fs.existsSync(dest) && target === null
-          ? "missing"
-          : target === null
-            ? "blocked" // a real file/dir sits on an owned name
-            : resolved === src
-              ? "ok"
-              : "stale";
-        managed.push({ harness: name, format, entry, src, dest, status, liveTarget: target ?? undefined });
-      }
-
-      for (const entry of ls(dir)) {
-        if (skippable(entry) || owned.has(entry) || ignored[name]?.[format]?.includes(entry)) continue;
-        const dest = path.join(dir, entry);
-        if (readlink(dest) !== null) continue; // symlink -> another tool's, none of our business
-        unmanaged.push({ harness: name, format, entry, dest });
-      }
-    }
-  }
-
-  return { managed, unmanaged };
-}

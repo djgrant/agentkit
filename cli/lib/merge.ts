@@ -9,32 +9,44 @@
 // prefix to "whatever the template declares".
 
 import * as fs from "node:fs";
-import { untilde } from "./fs.ts";
+import * as path from "node:path";
+import { REPO } from "../config/paths.ts";
+import { HARNESSES } from "../config/harnesses.ts";
+import type { MergedFile } from "../contracts/harness.ts";
+import { files, paths, symlink } from "../utils/fs.ts";
+import { toml } from "../utils/toml.ts";
 
-/** The keys and sections a template claims. Everything else in live is the machine's. */
-interface Owned {
-  roots: Set<string>; // top-level `key = …` names, owned individually
-  sections: Set<string>; // exact section headers; `[tui]` does not claim `[tui.nested]`
-}
+export const mergedConfig = {
+  /** Every merged config file across the harnesses. */
+  files: (): MergedFile[] =>
+    Object.entries(HARNESSES).flatMap(([harness, { base, merges = [] }]) =>
+      merges.map((file) => ({
+        harness,
+        file,
+        template: path.join(REPO, harness, file),
+        live: path.join(paths.untilde(base), file),
+      })),
+    ),
 
-/** Merge a repo template over a live config, preserving every unowned line. */
-export function mergeToml(template: string, live: string): string {
-  const owned = claims(template);
-  const [templateRoot, templateBody] = splitRoot(template);
-  const [liveRoot, liveBody] = splitRoot(live);
+  /** Whether the live file already matches what a merge would produce. */
+  inSync: ({ template, live, file }: MergedFile) =>
+    merge(files.readText(template), files.readText(live), file).trim() === files.readText(live).trim(),
 
-  // Root keys must precede the first section header, so the two root blocks are
-  // emitted together, ahead of both bodies — appending live roots after the
-  // template's sections would silently reparent them.
-  return [
-    templateRoot.trim(),
-    unownedRootKeys(liveRoot, owned.roots).trim(),
-    templateBody.trim(),
-    dropSections(liveBody, (section) => owned.sections.has(section)).trim(),
-  ]
-    .filter(Boolean)
-    .join("\n\n") + "\n";
-}
+  /** Write the merged result into the live file, replacing a legacy symlink. */
+  write({ template, live, file }: MergedFile) {
+    const current = files.readText(live);
+    const next = merge(files.readText(template), current, file);
+    if (next === current) return;
+    // A link here is the pre-merge layout: the live path pointed straight at the
+    // repo file. Removing it first stops the write landing back in the repo.
+    if (symlink.is(live)) fs.rmSync(live);
+    fs.writeFileSync(live, next);
+  },
+};
+
+/** Merge a template over a live config in the file's own format. */
+const merge = (template: string, live: string, file: string) =>
+  file.endsWith(".json") ? mergeJson(template, live) : mergeToml(template, live);
 
 /**
  * Merge a JSON template over a live JSON config. Ownership is the template's
@@ -43,113 +55,49 @@ export function mergeToml(template: string, live: string): string {
  * secrets, machine state) survive untouched. Non-object template values are
  * leaves and replace whatever the live file has there.
  */
-export function mergeJson(template: string, live: string): string {
-  const merged = deepMerge(parseJson(template), parseJson(live));
-  return JSON.stringify(merged, null, 2) + "\n";
+function mergeJson(template: string, live: string) {
+  const parse = (text: string): unknown => (text.trim() ? JSON.parse(text) : {});
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null && !Array.isArray(v);
+  const deepMerge = (template: unknown, live: unknown): unknown => {
+    if (!isRecord(template) || !isRecord(live)) return template;
+    const out = { ...live }; // live key order kept; new template keys append
+    for (const [key, value] of Object.entries(template)) out[key] = deepMerge(value, live[key]);
+    return out;
+  };
+  return JSON.stringify(deepMerge(parse(template), parse(live)), null, 2) + "\n";
 }
 
-const parseJson = (text: string): unknown => (text.trim() ? JSON.parse(text) : {});
+/** Merge a TOML template over a live config, preserving every unowned line. */
+function mergeToml(template: string, live: string) {
+  const [templateRoot, templateBody] = toml.splitRoot(template);
+  const [liveRoot, liveBody] = toml.splitRoot(live);
+  const keys = (block: string) => block.split("\n").map(toml.rootKey);
+  const ownedRoots = new Set(keys(templateRoot));
+  // Exact section headers; `[tui]` does not claim `[tui.nested]`.
+  const ownedSections = new Set(templateBody.split("\n").map(toml.sectionHeader));
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v);
-
-function deepMerge(template: unknown, live: unknown): unknown {
-  if (!isRecord(template) || !isRecord(live)) return template;
-  const out: Record<string, unknown> = { ...live }; // live key order kept; new template keys append
-  for (const [key, value] of Object.entries(template)) out[key] = deepMerge(value, live[key]);
-  return out;
-}
-
-/** Merge a template over a live config in the file's own format. */
-export const merge = (template: string, live: string, file: string) =>
-  file.endsWith(".json") ? mergeJson(template, live) : mergeToml(template, live);
-
-/** Whether a live file already matches what a merge would produce. */
-export const mergedInSync = (template: string, live: string, file: string) =>
-  merge(template, live, file).trim() === live.trim();
-
-/** Read a file, or "" when it doesn't exist yet. */
-export const readText = (file: string) =>
-  fs.existsSync(untilde(file)) ? fs.readFileSync(untilde(file), "utf8") : "";
-
-/** Split a TOML document into its root block and everything from the first section on. */
-function splitRoot(text: string): [string, string] {
-  const lines = text.split("\n");
-  const first = lines.findIndex((line) => sectionHeader(line) !== null);
-  return first === -1 ? [text, ""] : [lines.slice(0, first).join("\n"), lines.slice(first).join("\n")];
-}
-
-/** The names a template claims by declaring them. */
-function claims(template: string): Owned {
-  const [root, body] = splitRoot(template);
-  const roots = new Set(
-    root.split("\n").map(rootKey).filter((key): key is string => key !== null),
-  );
-  const sections = new Set(
-    body.split("\n").map(sectionHeader).filter((name): name is string => name !== null),
-  );
-  return { roots, sections };
-}
-
-/** "[a.b]" / "[[a.b]]" -> "a.b"; anything else -> null. Tolerates a trailing comment. */
-function sectionHeader(line: string): string | null {
-  const match = line.match(/^\s*\[\[?\s*(.+?)\s*\]\]?\s*(?:#.*)?$/);
-  return match ? match[1] : null;
-}
-
-/** "key = value" -> "key" (quotes stripped); comments and blanks -> null. */
-function rootKey(line: string): string | null {
-  const match = line.match(/^\s*([\w-]+|"[^"]+")\s*=/);
-  return match ? match[1].replace(/^"|"$/g, "") : null;
-}
-
-/**
- * The live root block reduced to the assignments the template doesn't own.
- * Comments are dropped rather than carried: the template's own header lands in
- * this block on the way out, so keeping them would re-append it every merge.
- * Root comments belong in the template, which is the file a human edits.
- */
-function unownedRootKeys(root: string, owned: Set<string>): string {
-  return root
+  // The live root block is reduced to the assignments the template doesn't own.
+  // Comments are dropped rather than carried: the template's own header lands in
+  // this block on the way out, so keeping them would re-append it every merge.
+  // Root comments belong in the template, which is the file a human edits.
+  const unownedRoots = liveRoot
     .split("\n")
     .filter((line) => {
-      const key = rootKey(line);
-      return key !== null && !owned.has(key);
+      const key = toml.rootKey(line);
+      return key !== null && !ownedRoots.has(key);
     })
     .join("\n");
-}
 
-/** Remove every [section] (header through the following lines) the predicate claims. */
-export function dropSections(text: string, claimed: (section: string) => boolean): string {
-  let dropping = false;
-  return text
-    .split("\n")
-    .filter((line) => {
-      const header = sectionHeader(line);
-      if (header !== null) dropping = claimed(header);
-      return !dropping;
-    })
-    .join("\n");
+  // Root keys must precede the first section header, so the two root blocks are
+  // emitted together, ahead of both bodies — appending live roots after the
+  // template's sections would silently reparent them.
+  return [
+    templateRoot.trim(),
+    unownedRoots.trim(),
+    templateBody.trim(),
+    toml.dropSections(liveBody, (section) => ownedSections.has(section)).trim(),
+  ]
+    .filter(Boolean)
+    .join("\n\n") + "\n";
 }
-
-/** Write the merged result into a harness's live config, replacing a legacy symlink. */
-export function writeMerged(templateFile: string, liveFile: string): { changed: boolean } {
-  const dest = untilde(liveFile);
-  const template = readText(templateFile);
-  const live = readText(dest);
-  const next = merge(template, live, liveFile);
-  if (next === live) return { changed: false };
-  // A link here is the pre-merge layout: the live path pointed straight at the
-  // repo file. Removing it first stops the write landing back in the repo.
-  if (isSymlink(dest)) fs.rmSync(dest);
-  fs.writeFileSync(dest, next);
-  return { changed: true };
-}
-
-const isSymlink = (p: string) => {
-  try {
-    return fs.lstatSync(p).isSymbolicLink();
-  } catch {
-    return false;
-  }
-};

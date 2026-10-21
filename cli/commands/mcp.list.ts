@@ -1,45 +1,43 @@
 import { defineCommand } from "@pokit/core";
 import { SECRETS_FILE } from "../config/paths.ts";
-import { renderLocalServer, servers } from "../config/mcp.ts";
-import { loadEnv, placeholders } from "../lib/env.ts";
-import { isEnabled, type Server } from "../lib/mcp.ts";
-import { localMcpFile, localServers, readLocalMcp } from "../lib/local-mcp.ts";
-
-const endpoint = (s: Server) => (s.transport === "http" ? s.url : [s.command, ...(s.args ?? [])].join(" "));
+import { renderLocalServer } from "../config/mcp.ts";
+import { endpoint, isEnabled, manifest, missingSecrets } from "../lib/mcp.ts";
+import { ProjectMcp } from "../lib/project-mcp.ts";
+import { env } from "../utils/env.ts";
+import { md } from "../utils/text.ts";
 
 export const command = defineCommand({
   label: "List declared MCP servers and which are in this project",
   examples: ["ak mcp list"],
   run: (r) => {
-    const declared = servers();
-    const env = loadEnv(SECRETS_FILE);
-    const file = localMcpFile();
-    const present = localServers(readLocalMcp(file));
+    const declared = manifest.servers();
+    const secrets = env.load(SECRETS_FILE);
+    const project = new ProjectMcp();
+    const present = project.servers;
 
     const rows = [
       ...Object.entries(declared).map(([id, s]) => {
-        const global = isEnabled(s) ? (s.targets ?? ["all"]).join(", ") : "disabled";
-        const missing = placeholders(JSON.stringify(s)).filter((name) => !(name in env));
-        const secrets = missing.length ? `**missing** ${missing.map((n) => `\`${n}\``).join(" ")}` : "—";
-        const project = !(id in present)
+        const missing = missingSecrets(s, secrets);
+        const inProject = !(id in present)
           ? "—"
-          : Bun.deepEquals(present[id], renderLocalServer(id, s))
+          : Bun.deepEquals(present[id], renderLocalServer(s, id))
             ? "**added**"
             : "**added (differs)**";
-        return `| \`${id}\` | ${project} | ${global} | ${s.transport} | ${secrets} | \`${endpoint(s)}\` |`;
+        return [
+          md.code(id),
+          inProject,
+          isEnabled(s) ? (s.targets ?? ["all"]).join(", ") : "disabled",
+          s.transport,
+          missing.length ? `**missing** ${missing.map(md.code).join(" ")}` : "—",
+          md.code(endpoint(s)),
+        ];
       }),
       ...Object.keys(present)
         .filter((id) => !(id in declared))
-        .map((id) => `| \`${id}\` | **added (not declared)** | — | — | — | — |`),
+        .map((id) => [md.code(id), "**added (not declared)**", "—", "—", "—", "—"]),
     ];
 
-    r.reporter.step(`MCP servers — project: ${file}`);
-    r.reporter.markdown(
-      [
-        `| Server | Project | Global | Transport | Secrets | Endpoint |`,
-        `| --- | --- | --- | --- | --- | --- |`,
-        ...rows,
-      ].join("\n"),
-    );
+    r.reporter.step(`MCP servers — project: ${project.file}`);
+    r.reporter.markdown(md.table(["Server", "Project", "Global", "Transport", "Secrets", "Endpoint"], rows));
   },
 });

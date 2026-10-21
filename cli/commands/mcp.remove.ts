@@ -1,12 +1,8 @@
 import { defineCommand } from "@pokit/core";
 import { z } from "zod";
-import { servers } from "../config/mcp.ts";
-import {
-  localMcpFile,
-  localServers,
-  readLocalMcp,
-  writeLocalMcp,
-} from "../lib/local-mcp.ts";
+import { manifest } from "../lib/mcp.ts";
+import { ProjectMcp } from "../lib/project-mcp.ts";
+import { object } from "../utils/collections.ts";
 
 export const command = defineCommand({
   label: "Remove a declared MCP server from this project",
@@ -14,24 +10,20 @@ export const command = defineCommand({
   context: {
     server: {
       from: "arg",
-      schema: z.string().refine((id) => id in servers(), "Unknown MCP server"),
+      schema: z.string().refine((id) => id in manifest.servers(), "Unknown MCP server"),
       description: "Server declared in common/mcp/servers.json",
-      resolve: () => Object.keys(servers()),
+      resolve: () => Object.keys(manifest.servers()),
     },
   },
-  run: (r, { context }) => {
-    const file = localMcpFile();
-    const config = readLocalMcp(file);
-    const current = localServers(config);
+  run: (r, { context: { server: id } }) => {
+    const project = new ProjectMcp();
 
-    if (!(context.server in current)) {
-      r.reporter.info(`${context.server} is not present in ${file}`);
+    if (!(id in project.servers)) {
+      r.reporter.info(`${id} is not present in ${project.file}`);
       return;
     }
 
-    const next = { ...current };
-    delete next[context.server];
-    writeLocalMcp(file, config, next);
-    r.reporter.success(`Removed ${context.server} from ${file}`);
+    project.write(object.omit(project.servers, [id]));
+    r.reporter.success(`Removed ${id} from ${project.file}`);
   },
 });

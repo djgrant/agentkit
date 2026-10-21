@@ -1,41 +1,32 @@
 import { defineCommand } from "@pokit/core";
 import * as path from "node:path";
 import { REPO, SERVERS_FILE, SECRETS_FILE } from "../config/paths.ts";
-import { servers } from "../config/mcp.ts";
-import { isEnabled } from "../lib/mcp.ts";
-import { loadEnv, placeholders } from "../lib/env.ts";
+import { endpoint, isEnabled, manifest } from "../lib/mcp.ts";
+import { env } from "../utils/env.ts";
+import { md } from "../utils/text.ts";
 
 export const command = defineCommand({
   label: "View the canonical MCP source and secret status",
   run: async (r) => {
-    const list = servers();
-    const env = loadEnv(SECRETS_FILE);
-    const referenced = placeholders(JSON.stringify(list)).sort();
+    const servers = manifest.servers();
+    const secrets = env.load(SECRETS_FILE);
+    const referenced = env.placeholders(JSON.stringify(servers)).sort();
 
-    const serverRows = Object.entries(list).map(([id, s]) => {
-      const endpoint = s.transport === "http" ? s.url : [s.command, ...(s.args ?? [])].join(" ");
-      const targets = isEnabled(s) ? (s.targets ?? ["all"]).join(", ") : "**disabled**";
-      return `| \`${id}\` | ${targets} | ${s.transport} | \`${endpoint}\` |`;
-    });
+    const serverRows = Object.entries(servers).map(([id, s]) => [
+      md.code(id),
+      isEnabled(s) ? (s.targets ?? ["all"]).join(", ") : "**disabled**",
+      s.transport,
+      md.code(endpoint(s)),
+    ]);
 
-    r.reporter.step(`MCP servers — ${path.relative(REPO, SERVERS_FILE)} (${Object.keys(list).length})`);
-    r.reporter.markdown(
-      [
-        `| Server | Targets | Transport | Endpoint |`,
-        `| --- | --- | --- | --- |`,
-        ...serverRows,
-      ].join("\n"),
-    );
+    r.reporter.step(`MCP servers — ${path.relative(REPO, SERVERS_FILE)} (${serverRows.length})`);
+    r.reporter.markdown(md.table(["Server", "Targets", "Transport", "Endpoint"], serverRows));
 
     if (referenced.length) {
-      const secretRows = referenced.map(
-        (name) => `| \`${name}\` | ${name in env ? "present" : "**missing**"} |`,
-      );
+      const secretRows = referenced.map((name) => [md.code(name), name in secrets ? "present" : "**missing**"]);
       r.reporter.step("Secrets");
-      r.reporter.markdown(
-        [`| Variable | Status |`, `| --- | --- |`, ...secretRows].join("\n"),
-      );
-      if (referenced.some((name) => !(name in env))) {
+      r.reporter.markdown(md.table(["Variable", "Status"], secretRows));
+      if (referenced.some((name) => !(name in secrets))) {
         r.reporter.warn("Some secrets are missing — copy common/mcp/secrets.env.example and fill it in.");
       }
     }

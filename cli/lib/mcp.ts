@@ -1,67 +1,73 @@
-// The canonical server model, and the contract a dialect abides by: how to
-// render a server into its native shape, how its secrets leave the repo, and
-// where the result is stored. Knows nothing about specific harnesses.
+// The MCP manifest (common/mcp/servers.json) and its projection onto each
+// harness dialect.
 
-import type { McpStore } from "./store.ts";
+import { SERVERS_FILE, SECRETS_FILE } from "../config/paths.ts";
+import { DIALECTS } from "../config/mcp.ts";
+import { ManifestSchema, type Dialect, type McpTarget, type Server } from "../contracts/mcp.ts";
+import { files } from "../utils/fs.ts";
+import { env } from "../utils/env.ts";
 
-export interface Server {
-  transport: "stdio" | "http";
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  url?: string;
-  headers?: Record<string, string>;
-  targets?: string[]; // omitted = every target
-  enabled?: boolean; // omitted = true; false keeps the definition but projects it nowhere
-}
+const read = () => ManifestSchema.parse(files.readJson(SERVERS_FILE));
 
-/**
- * How ${NAME} placeholders leave the repo: expanded to the secret value
- * ("inline"), left as-is for the harness to interpolate ("passthrough"),
- * or rewritten to the dialect's own template (e.g. "{env:$NAME}").
- */
-export type SecretStyle = "inline" | "passthrough" | (string & {});
+export const manifest = {
+  servers: () => read().servers,
 
-export interface Dialect {
-  store: McpStore; // where the rendered servers persist
-  secrets: SecretStyle;
-  render: (server: Server, id: string) => Record<string, unknown>; // canonical -> native shape
-}
+  targets(): McpTarget[] {
+    const { servers, unmanaged } = read();
+    const secrets = env.load(SECRETS_FILE);
+    return Object.entries(DIALECTS).map(([name, dialect]) => ({
+      name,
+      dialect,
+      ownedIds: Object.keys(servers),
+      unmanagedIds: unmanaged[name] ?? [],
+      liveServers: () => dialect.store.read(),
+      desiredServers: renderServers(servers, name, dialect, secrets),
+    }));
+  },
 
-/** Drop undefined fields so dialect renders stay terse. */
-export const compact = (obj: Record<string, unknown>): Record<string, unknown> =>
-  Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined));
+  /** Live server ids the manifest neither owns nor lists as unmanaged. */
+  foreignIds: (target: McpTarget) =>
+    Object.keys(target.liveServers()).filter(
+      (id) => !target.ownedIds.includes(id) && !target.unmanagedIds.includes(id),
+    ),
+
+  /** Record ids in the manifest's `unmanaged` map so sync stops asking about them. */
+  markUnmanaged(entries: { harness: string; id: string }[]) {
+    const raw = files.readJson(SERVERS_FILE); // written back raw, so $comment and key order survive
+    const unmanaged: Record<string, string[]> = (raw.unmanaged ??= {});
+    for (const { harness, id } of entries) {
+      const ids = (unmanaged[harness] ??= []);
+      if (!ids.includes(id)) ids.push(id);
+    }
+    files.writeJson(SERVERS_FILE, raw);
+  },
+};
 
 /** A server the manifest defines but does not want live anywhere. */
-export const isEnabled = (server: Server): boolean => server.enabled !== false;
+export const isEnabled = (server: Server) => server.enabled !== false;
+
+/** Where a server lives: its URL, or the command line that launches it. */
+export const endpoint = (s: Server) => (s.transport === "http" ? s.url : [s.command, ...(s.args ?? [])].join(" "));
+
+/** Placeholders referenced anywhere in value that have no secret to fill them. */
+export const missingSecrets = (value: unknown, secrets: Record<string, string>) =>
+  env.placeholders(JSON.stringify(value)).filter((name) => !(name in secrets));
 
 /**
  * The servers targeting `name`, rendered in the dialect with secrets resolved.
  * Disabled servers are dropped here rather than in the manifest reader: they stay
  * owned ids, so sync prunes them from the live config instead of asking about them.
  */
-export function renderServers(
-  servers: Record<string, Server>,
-  name: string,
-  dialect: Dialect,
-  env: Record<string, string>,
-): Record<string, unknown> {
+function renderServers(servers: Record<string, Server>, name: string, dialect: Dialect, secrets: Record<string, string>) {
   const rendered = Object.fromEntries(
     Object.entries(servers)
       .filter(([, server]) => isEnabled(server) && (!server.targets || server.targets.includes(name)))
       .map(([id, server]) => [id, dialect.render(server, id)]),
   );
-  return resolveSecrets(rendered, dialect.secrets, env);
-}
-
-function resolveSecrets(
-  block: Record<string, unknown>,
-  style: SecretStyle,
-  env: Record<string, string>,
-): Record<string, unknown> {
-  if (style === "passthrough") return block;
-  const json = JSON.stringify(block).replace(/\$\{(\w+)\}/g, (placeholder, name) =>
-    style === "inline" ? (env[name] ?? placeholder) : style.replaceAll("$NAME", name),
+  if (dialect.secrets === "passthrough") return rendered;
+  const style = dialect.secrets;
+  const json = env.interpolate(JSON.stringify(rendered), (name, placeholder) =>
+    style === "inline" ? (secrets[name] ?? placeholder) : style.replaceAll("$NAME", name),
   );
   return JSON.parse(json);
 }
