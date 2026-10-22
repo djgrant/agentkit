@@ -23,6 +23,9 @@
     ],
     "defaultMode": "auto"
   },
+  "env": {
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/Repos/operations/agentkit/claude/mods/fixup:~/Repos/operations/agentkit/claude/mods/fixup-swap"
+  },
   "model": "opus[1m]",
   "disableClaudeAiConnectors": true,
   "disableBundledSkills": true,

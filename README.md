@@ -46,6 +46,8 @@ exceptions are similarly recorded under `unmanaged` in `common/mcp/servers.json`
 - [`common`](common): skills and mcp shared across harnesses
 - `vendor`: third-party skills installed by `pok skills add`, same layout as the repo, not in version control. An authored skill with the same name wins
 - [`claude`](claude): claude-specific setup
+- [`claude/mods`](claude/mods): Claude Code mods, loaded through `CLAUDE_CODE_PLUGIN_DIRS` in `claude/settings.json`
+  - `/fixup <instructions>` rewrites the last completed assistant message in place. The model sees only the revision; the original stays above a compaction marker in the transcript file. `fixup-swap` is its other half: Claude Code won't let a plugin answer a compaction it started itself
 - [`opencode`](opencode): open-code specific setup
 - [`pi/extensions`](pi/extensions): user-level Pi extensions, symlinked into `~/.pi/agent/extensions` by `pok sync`
   - `/fixup <instructions>` revises the last completed assistant message and installs the revision on a new active branch; the original remains available in Pi's session tree
