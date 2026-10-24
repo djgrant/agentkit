@@ -3,6 +3,10 @@ name: clean-code
 description: Some suggestions if the user asks for clean code.
 ---
 
+This guide is half practical tips and half exortation to imagine what the code would be at greater scale and build the interfaces for that scale today.
+
+It is not about adding complexity. Rather it is about seeing the patterns of complexity and taming them.
+
 ## 1. Use libraries
 
 ```
@@ -44,7 +48,7 @@ const math = {
 
 Why objects? Because namespacing also tells a story (including provenance).
 
-## 3. Do not split code into functions
+## 3. Do not split procedural code into functions
 
 Ideally modules run top to bottom. You don't have to jump up and down finding function definition. Functions should never be created to "split the module up". Create functions when there is a clear abstraction.
 
@@ -76,8 +80,26 @@ You don't want 100 different modules containing one function each. You want seve
 
 Don't add types for everything. If it can be inferred, just let it be inferred (except in rare cases where it's an actual performance concern). 
 
-Write abstractions with good generics. 
+Do spend time on making sure functions are typed with well thought out generics so that inference at the call site is effortless.
 
 Types that represent contracts should be in their own module/folder. 
 
 Consider if the contract should in fact be a schema in which case use zod/valibot/arktype.
+
+## 9. Find the hidden interfaces
+
+Identify unamed patterns hiding in the codebase that could be lifted into an interface – whether that's an API, a package, a utility set. 
+
+## 10. Design for different consumers
+
+Imagine that each part of the codebase is going to be worked on by different teams. Do those parts make sense on their own. Can that team work effectively on their task in isolation without having to communicate with other teams? We are of course talking about the single responsibility principle. It makes code easier to understand and safer to change.
+
+## 11. Choose the least powerful abstraction
+
+Is there less powerful way to achieve the same thing? Do that then. 
+
+## 12. Create the libraries you wish you had
+
+Does the program have some features that are in themselves particularly complex? Wouldn't it be great if there was a library that already solved this for you? 
+
+If there is, use it. But if not, create it. Create the perfect library you wish you had. Design it not for this use case, but what would be the most composable primitive to achieve its likely goals.
