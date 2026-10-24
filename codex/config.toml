@@ -7,7 +7,7 @@
 # alone. So `[tui]` below does not disturb `[tui.model_availability_nux]`, and
 # `[mcp_servers.*]` is absent because those tables come from common/mcp.
 
-model = "gpt-5.6-sol"
+model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 personality = "friendly"
 approvals_reviewer = "auto_review"
