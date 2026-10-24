@@ -36,7 +36,7 @@ END
 
 RETURN final verdict, rounds completed and summary of findings/changes
 
-## Explorer Instructions
+# Explorer Instructions
 
 ## Role
 
