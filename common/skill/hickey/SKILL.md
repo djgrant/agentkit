@@ -1,14 +1,14 @@
 ---
 name: hickey
 description: Hill-climbing loop to simplify a target. Use on request only. Requires reading MDZ skill.
-input: $target, $explorer?, $worker?, $reviewer?, $max-rounds?
+input: $target, $max-rounds?
 ---
 
-$max-rounds = $max-rounds ?? 10
+$max-rounds = $max-rounds ?? 3
 $round = 0
 
 WHILE $round < $max-rounds
-  [$canidates, $satisfied] = SPAWN $explorer WITH #explorer-instructions($target)
+  [$canidates, $satisfied] = SPAWN sub-agent WITH #explorer-instructions($target)
 
   IF $satisfied THEN
     BREAK;
@@ -19,15 +19,15 @@ WHILE $round < $max-rounds
   $batches = Array<set of $selected_canidates that can be efficiently completed by a single agent>
 
   FOR $batch of $batches
-    SPAWN $worker 
+    SPAWN sub-agent
     WITH the set of tasks to be completed
   END
     
-  SPAWN $critic
+  SPAWN sub agent
   WITH "Review the work in commits #{commits from $batches}" 
 
   IF $critic reported issues THEN
-    SPAWN $worker
+    SPAWN sub-agent
     WITH instructions to fix the issues
   END
 
