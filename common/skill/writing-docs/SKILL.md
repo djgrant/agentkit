@@ -51,31 +51,7 @@ Include references to types, short code snippets (pseudo code is allowed), refer
 
 ## Code
 
-### Show, then talk
-
-Draft the code or diagram with the sentence that needs it. If the page turns on the shape of an API, show the real code, and let the prose point at it ("the input has no path field") instead of reading it out.
-
-### Curate the code
-
-Never paste a 200-line diff when 10 lines contain the logic. Show the essence, not the changeset.
-
-### Allow whitespace
-
-3 sentences next to 40 lines of code is fine. White space beats filler prose.
-
-## Sections
-
-Each section type serves a specific function.
-
-### Prose
-
-**Use:** Background, problem statements, transitions.
-
-> "The authentication layer processed tokens on every request. As traffic grew, this became the primary latency bottleneck."
-
-### Code
-
-Use short code blocks that get the conceptual model across. Use short comments with arrows to point out the load-bearing/surprising bits. 
+Use short code blocks that get the conceptual model across. Highlight the load-bearing/surprising bits with line hightlight, diff, or short comments with arrows.
 
 Follow code with comments that point out what was interesting, rather than put (boring) descriptions of what the code does before the code.
 
