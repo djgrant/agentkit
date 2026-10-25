@@ -53,7 +53,7 @@ Include references to types, short code snippets (pseudo code is allowed), refer
 
 Use short code blocks that get the conceptual model across. Highlight the load-bearing/surprising bits with line hightlight, diff, or short comments with arrows.
 
-Follow code with comments that point out what was interesting, rather than put (boring) descriptions of what the code does before the code.
+Precede each code sample with one short line about intent so there is a clear narrative arc. Never precede code by explaining the code below; follow code with comments that point out what was interesting.
 
 ### Conceptual tension
 
