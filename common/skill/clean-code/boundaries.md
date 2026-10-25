@@ -105,6 +105,8 @@ The fact that each domain follows a conventional pattern is reflected in the fil
 
 This is a example of poor structure. The lack of a type kind in the path makes it particularly difficult to reason about the architecture of this program. A domain should not be nested in a lib folder. The result is junk drawer of modules.
 
+noun -> noun in the folder heirarchy is more often than not a red flag.
+
 ```
 cli/lib
 ├── catalysts
