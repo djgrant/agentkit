@@ -23,12 +23,14 @@ If the codebase contains multiple sub-systems, seperate them out the outset.
 Within a domain, what are all same kinds of operations that are performed? 
 
 | domain 1 | kind 1 | kind 2 | kind 3 |
+|---|---|---|---|
 | domain 2 | kind 1 | kind 2 | kind 3 |
 | domain 3 | kind 1 | kind 2 | kind 3 |
 
 Those columns are the blueprint for a package (read ./contracts.md if you encounter this):
 
 | pattern 1 |
+|---|
 | kind 1 |
 | kind 2 |
 | kind 3 |
