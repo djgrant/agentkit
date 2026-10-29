@@ -12,9 +12,13 @@ metadata:
 Use this template for writing the PR body:
 
 ```markdown
-## Summary
-
 <2–3 sentences: how it worked before, what went wrong because of that, what this PR does>
+
+## Public API
+
+<worked example>
+
+## Impelementation
 
 <diagram, diff-sketch, or tree>
 
@@ -46,6 +50,10 @@ Describe functionality in simple procedural language – do not modify nouns e.g
 ### Summary
 
 Pick the smallest view that makes the key point clear.
+
+- Show the public API if one is introduced
+
+
 
 - Show logic or an algorithm as pseudocode:
 
@@ -179,3 +187,4 @@ The blast radius is the potential impact or scope of the changes introduced by t
 ### Examples
 
 https://github.com/notationlabs/yieldstar/pull/39
+https://github.com/notationlabs/yieldstar/pull/42
