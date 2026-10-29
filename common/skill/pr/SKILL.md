@@ -14,12 +14,17 @@ Use this template for writing the PR body:
 ```markdown
 ## Summary
 
+<2–3 sentences: how it worked before, what went wrong because of that, what this PR does>
+
 <diagram, diff-sketch, or tree>
 
 ## Evidence
 
-- **Before:** <screenshot/output/failing test run>
-  **After:** <screenshot/output/passing test run>
+**Before:**
+- <observable behaviour>
+
+**After:**
+- <the sam
 
 ## Merge Danger
 
@@ -34,7 +39,7 @@ Use this template for writing the PR body:
 
 ## Sections
 
-Skip all preambles and keep prose brief. Use the user's domain language from `GLOSSARY.md`.
+Skip all preambles and keep prose brief. 
 
 ### Summary
 
@@ -168,3 +173,7 @@ Execution-based evidence is A-tier. Test results, console output. Show the exact
 Describe whether it's a one-way or two-way door. You can walk back through two-way doors, but not one-way doors. A PR that is cheap to roll back is lower risk. Changes that involve destructive actions or hard-to-reverse decisions are one-way doors.
 
 The blast radius is the potential impact or scope of the changes introduced by this PR. Consider all possibilities. Examples are layout shift, breakages for consumers, mobile responsiveness, etc.
+
+### Examples
+
+https://github.com/notationlabs/yieldstar/pull/39
