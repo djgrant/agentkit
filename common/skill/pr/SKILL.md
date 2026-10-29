@@ -45,7 +45,7 @@ Use this template for writing the PR body:
 
 Skip all preambles and keep prose brief. 
 
-Describe functionality in simple procedural language – do not modify nouns e.g. "delivery that outlived", or turn nouns into actors e.g. "a claim hid an execution".
+Describe functionality in simple procedural language.
 
 ### Summary
 
