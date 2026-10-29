@@ -13,3 +13,7 @@ Do not describe what it self evident in the code. load-bearing/surprising behavi
 The only excception are code comments that are there for the purpose of intellisense etc.
 
 Comments describing fucntion behaviour generally go above the function. Commonents on a paramters, above the paramter.
+
+## Writing
+
+Describe behaviour in simple procedural language. Do not modify nouns e.g. "delivery that outlived" or "due execution". Do not turn nouns into actors e.g. "a claim hid an execution".
