@@ -3,6 +3,6 @@ name: execute-plan
 description: Orchestrate the exceution of a plan or RFC that requires subagents.
 ---
 
-If the task is significant size break it into subagent work. Save your own context for orchestration, strategy and follow ups.
+If the task is significant size, create a branch, and break the plan into parts that you delegate to subagents. Save your own context for orchestration, strategy and follow ups.
 
-When you delegate initial tasks don't overpresribe the task. Just point the subagent to the source plan and tell them what they are responisble for completing.
+When you delegate initial tasks don't overprescribe the task. Just point the subagent to the source plan and tell them what part of it they are responisble for completing.
