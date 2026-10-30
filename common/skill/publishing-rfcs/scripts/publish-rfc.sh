@@ -1,27 +1,34 @@
 #!/bin/sh
-# Publish an RFC as a GitHub issue with its explainer video under the Abstract.
-# Usage: publish-rfc.sh <rfc-number> <owner/repo> <video>   (run from the repo holding rfcs/)
 set -eu
 
-num=$(printf '%03d' "$(echo "$1" | sed 's/^0*//')")
+n=$(echo "$1" | sed 's/^0*//')
 repo=$2
 video=$(cd "$(dirname "$3")" && pwd)/$(basename "$3")
 catalog=${LENS_CATALOG:-$HOME/Repos/operations/lenses-catalog/github}
 
-rfc=$(ls rfcs/"$num"-*.md 2>/dev/null | head -1)
-[ -n "$rfc" ] || { echo "no rfcs/$num-*.md in $PWD" >&2; exit 1; }
+# The RFC number keeps the padding of the file name: 001 in one repo, 0001 in another.
+rfc=$(ls rfcs/*.md 2>/dev/null | awk -F/ -v n="$n" '{ split($2, p, "-"); if (p[1] + 0 == n) { print; exit } }')
+[ -n "$rfc" ] || { echo "no RFC $n in $PWD/rfcs" >&2; exit 1; }
 base=$(basename "$rfc" .md)
+num=${base%%-*}
 [ -f "$video" ] || { echo "no video at $video" >&2; exit 1; }
 
-title="RFC $num: $(sed -n 's/^# //p' "$rfc" | head -1)"
+# Some H1s already start with "RFC: ", which would double up with the "RFC <num>: " prefix.
+title="RFC $num: $(sed -n 's/^# //p' "$rfc" | head -1 | sed 's/^RFC[^:]*: *//')"
 existing=$(gh issue list -R "$repo" --state all --search "\"RFC $num:\" in:title" --json number,title \
   --jq ".[] | select(.title | startswith(\"RFC $num:\")) | .number" | head -1)
-[ -z "$existing" ] || { echo "already published: https://github.com/$repo/issues/$existing" >&2; exit 1; }
 
 work=$(mktemp -d)
-# Body: the RFC without its frontmatter and H1.
+# Body: the RFC without its frontmatter, H1 and leading **Key:** metadata lines.
+# An intro with no heading gets "## Abstract", so every issue opens with it.
 awk 'NR==1 && /^---$/ {fm=1; next} fm && /^---$/ {fm=0; next} !fm' "$rfc" \
-  | sed '/./,$!d' | sed '1{/^# /d;}' | sed '/./,$!d' > "$work/body.md"
+  | sed '/./,$!d' | sed '1{/^# /d;}' \
+  | awk '!body && (/^\*\*[^*]+:\*\*/ || /^$/) { next } { body=1; print }' > "$work/rfc.md"
+if grep -q '^## Abstract' "$work/rfc.md"; then
+  cp "$work/rfc.md" "$work/body.md"
+else
+  { printf '## Abstract\n\n'; cat "$work/rfc.md"; } > "$work/body.md"
+fi
 
 # The video's transcript, collapsed under the video, so agents working from the
 # issue can read it. Footnotes are inlined: GitHub would render them at the very
@@ -45,9 +52,17 @@ vkbps=$(awk -v d="$duration" 'BEGIN { printf "%d", 9.5 * 8 * 1024 * 1024 / 1000 
   && ffmpeg -y -v error -i "$video" -vf scale=1280:-2 -c:v libx264 -preset slow \
   -b:v "${vkbps}k" -pass 2 -c:a aac -b:a 48k -ac 1 -movflags +faststart "$base.mp4")
 
-url=$(gh issue create -R "$repo" --title "$title" --label enhancement --body-file "$work/body.md")
-issue=${url##*/}
-echo "created $url" >&2
+# A rerun rewrites the existing issue, so an issue left without its video can be repaired.
+if [ -n "$existing" ]; then
+  issue=$existing
+  url=https://github.com/$repo/issues/$issue
+  gh issue edit "$issue" -R "$repo" --title "$title" >/dev/null
+  echo "updating $url" >&2
+else
+  url=$(gh issue create -R "$repo" --title "$title" --label enhancement --body-file "$work/body.md")
+  issue=${url##*/}
+  echo "created $url" >&2
+fi
 echo "compressed video: $work/$base.mp4" >&2
 
 result=$(lens call github/issue-attachment --catalog "$catalog" --allow-writes --timeout-ms 300000 \
