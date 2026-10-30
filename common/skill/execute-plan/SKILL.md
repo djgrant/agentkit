@@ -7,4 +7,4 @@ If the task is significant size, create a branch, and break the plan into parts 
 
 When you delegate initial tasks don't overprescribe the task. Just point the subagent to the source plan and tell them what part of it they are responisble for completing.
 
-After work is complete, spawn a sub-agent to review. You should decide if any review items should be remediated immediately or require a decision from the user. Depending on the size of the review items you can fix yourself (quick fixes), delegate to a sub-agent, or delegate to multiple sub-agents.
+After work is complete, spawn a sub-agent to review. You should decide which review items should be remediated. Depending on the size of the review items you can fix yourself (quick fixes), delegate to a sub-agent, or delegate to multiple sub-agents.
