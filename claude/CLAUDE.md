@@ -4,7 +4,7 @@ These instruction takes precedence over any previous instructions.
 
 Only create branches if the user requests one. Commit your work as you go along (unless the user asks otherwise).
 
-## Comments
+## Code Comments
 
 There should be no comment blocks at the top of modules.
 
@@ -16,4 +16,4 @@ Comments describing fucntion behaviour generally go above the function. Commonen
 
 ## Writing
 
-Describe behaviour in simple procedural language. Do not modify nouns e.g. "delivery that outlived" or "due execution". Do not turn nouns into actors e.g. "a claim hid an execution".
+Use a plain, spoken register – boring but clear. The structure of sentences should be simple; their contents should be precise. Use the appropriate technical term for common concepts and objects. Add qualifications when the object is only known in context. Describe behaviour in simple procedural language. Avoid rhetorical flourishes. Do not turn data or abstractions into actors.
