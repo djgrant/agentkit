@@ -47,6 +47,10 @@ Skip all preambles and keep prose brief.
 
 Describe functionality in simple procedural language.
 
+### Public API
+
+Make sure you show enough of the code to be able to understand its context. Do wrap code inside its function declaration, and do show where referenced variables come from e.g. function parameter, import etc. You do not need to include unrelated lines within a function declaration example.
+
 ### Summary
 
 Pick the smallest view that makes the key point clear.
