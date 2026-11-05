@@ -18,7 +18,7 @@ cp "$SKILL/templates/SCRIPT.md" SCRIPT.md
 cp "$SKILL/templates/stage.html" stage.html
 mkdir -p frames assets/fonts
 cp "$SKILL/kit/fonts/"*.woff2 assets/fonts/
-printf 'ELEVENLABS_API_KEY=op://Private/gyps43liylukre2rohkqdiadsm/credential\n' > .env.tpl
+printf 'ELEVENLABS_API_KEY=op://secrets/tkmaqtlto75ynwt227omdlcpz4/credential\n' > .env.tpl
 cat > package.json <<EOF
 {
   "name": "$(basename "$dir")",
