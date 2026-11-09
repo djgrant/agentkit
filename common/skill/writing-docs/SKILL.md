@@ -5,6 +5,8 @@ description: How to write documentation pages. Use when writing or editing docs,
 
 # Writing docs
 
+For each page:
+
 ## Approach
 
 Build up the mental model from knowledge shared between you and the reader, and then layer the explanation inductively, brick-by-brick. Use lists, tables, and examples to make pages more quickly parseable and to avoid walls of text.
