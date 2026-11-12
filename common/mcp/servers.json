@@ -58,6 +58,9 @@
     "codex": [
       "node_repl",
       "computer-use"
+    ],
+    "claude": [
+      "pangram"
     ]
   }
 }
